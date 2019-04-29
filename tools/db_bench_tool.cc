@@ -1098,6 +1098,9 @@ DEFINE_bool(report_file_operations, false, "if report number of file "
 
 DEFINE_bool(use_titan, true, "Open a Titan instance.");
 
+DEFINE_uint64(titan_min_blob_size, 0,
+             "Smallest blob to store in a file.");
+
 static const bool FLAGS_soft_rate_limit_dummy __attribute__((__unused__)) =
     RegisterFlagValidator(&FLAGS_soft_rate_limit, &ValidateRateLimit);
 
@@ -3569,7 +3572,7 @@ void VerifyDBFromDB(std::string& truth_db_name) {
 
     options.listeners.emplace_back(listener_);
     
-    opts->min_blob_size = 0;
+    opts->min_blob_size = FLAGS_titan_min_blob_size;
     opts->min_gc_batch_size = 128 << 20;
     opts->blob_file_compression = FLAGS_compression_type_e;
     if (FLAGS_cache_size) {
