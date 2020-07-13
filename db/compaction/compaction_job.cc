@@ -776,6 +776,11 @@ Status CompactionJob::Install(const MutableCFOptions& mutable_cf_options) {
          << compact_->num_output_records << "num_subcompactions"
          << compact_->sub_compact_states.size() << "output_compression"
          << CompressionTypeToString(compact_->compaction->output_compression());
+  fprintf(stderr,
+          "event: compaction finished (out level=%d, out files=%ld, out "
+          "size=%ld)\n",
+          compact_->compaction->output_level(), compact_->NumOutputFiles(),
+          compact_->total_bytes);
 
   if (compaction_job_stats_ != nullptr) {
     stream << "num_single_delete_mismatches"

@@ -1878,14 +1878,20 @@ class Stats {
                   (now - last_report_finish_) / 1000000.0,
                   (now - start_) / 1000000.0);
 
+          fprintf(stderr, "perf context: %s\n",
+                  get_perf_context()
+                      ->ToString(true /*exclude_zero_counters*/)
+                      .c_str());
+          get_perf_context()->Reset();
+
           if (id_ == 0 && FLAGS_stats_per_interval) {
             std::string stats;
 
             if (db_with_cfh && db_with_cfh->num_created.load()) {
               for (size_t i = 0; i < db_with_cfh->num_created.load(); ++i) {
-                if (db->GetProperty(db_with_cfh->cfh[i], "rocksdb.cfstats",
-                                    &stats))
-                  fprintf(stderr, "%s\n", stats.c_str());
+                // if (db->GetProperty(db_with_cfh->cfh[i], "rocksdb.cfstats",
+                //                     &stats))
+                //   fprintf(stderr, "%s\n", stats.c_str());
                 if (FLAGS_show_table_properties) {
                   for (int level = 0; level < FLAGS_num_levels; ++level) {
                     if (db->GetProperty(
@@ -1902,9 +1908,9 @@ class Stats {
                 }
               }
             } else if (db) {
-              if (db->GetProperty("rocksdb.stats", &stats)) {
-                fprintf(stderr, "%s\n", stats.c_str());
-              }
+              // if (db->GetProperty("rocksdb.stats", &stats)) {
+              //   fprintf(stderr, "%s\n", stats.c_str());
+              // }
               if (FLAGS_show_table_properties) {
                 for (int level = 0; level < FLAGS_num_levels; ++level) {
                   if (db->GetProperty(
