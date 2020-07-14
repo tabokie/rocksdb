@@ -195,6 +195,8 @@ DEFINE_string(
     "\theapprofile -- Dump a heap profile (if supported by this port)\n"
     "\treplay      -- replay the trace file specified with trace_file\n");
 
+DEFINE_string(events, "", "periodical events to inject");
+
 DEFINE_int64(num, 1000000, "Number of key/values to place in database");
 
 DEFINE_int64(numdistinct, 1000,
@@ -2708,6 +2710,45 @@ class Benchmark {
     }
     Open(&open_options_);
     PrintHeader();
+    // only support one event now
+    std::unique_ptr<port::Thread> background_events;
+    std::atomic<bool> background_events_should_stop(false);
+    if (!FLAGS_events.empty()) {
+      std::string event = FLAGS_events;
+      uint32_t interval = 1;  // second
+      bool seq = true;
+      if (*event.rbegin() == ']') {
+        auto it = event.find('[');
+        if (it == std::string::npos) {
+          fprintf(stderr, "error parsing events");
+          exit(1);
+        }
+        std::string args = event.substr(it + 1);
+        args.resize(args.size() - 1);
+        event.resize(it);
+        it = args.find('I');
+        if (it != std::string::npos) {
+          interval = atol(args.data() + it + 1);
+        }
+      }
+      if (event == "deleterandom") {
+        seq = false;
+      }
+      background_events.reset(new port::Thread(
+          [this, &background_events_should_stop](uint32_t _interval,
+                                                 bool _seq) {
+            ThreadState* state = new ThreadState(0);
+            while (!background_events_should_stop.load(
+                std::memory_order_relaxed)) {
+              sleep(_interval * 60);
+              std::cout << "trigger " << (_seq ? "deleteseq" : "deleterandom")
+                        << std::endl;
+              EventDelete(state, _seq);
+            }
+            delete state;
+          },
+          interval, seq));
+    }
     std::stringstream benchmark_stream(FLAGS_benchmarks);
     std::string name;
     std::unique_ptr<ExpiredTimeFilter> filter;
@@ -3077,6 +3118,12 @@ class Benchmark {
       }
     }
 
+    if (background_events) {
+      background_events_should_stop.store(true, std::memory_order_relaxed);
+      std::cout << "waiting for background event" << std::endl;
+      background_events->join();
+      background_events.reset();
+    }
     if (secondary_update_thread_) {
       secondary_update_stopped_.store(1, std::memory_order_relaxed);
       secondary_update_thread_->join();
@@ -5358,6 +5405,28 @@ class Benchmark {
       }
       auto s = db->Write(write_options_, &batch);
       thread->stats.FinishedOps(nullptr, db, entries_per_batch_, kDelete);
+      if (!s.ok()) {
+        fprintf(stderr, "del error: %s\n", s.ToString().c_str());
+        exit(1);
+      }
+      i += entries_per_batch_;
+    }
+  }
+
+  void EventDelete(ThreadState* thread, bool seq) {
+    WriteBatch batch;
+    int64_t i = 0;
+    std::unique_ptr<const char[]> key_guard;
+    Slice key = AllocateKey(&key_guard);
+    DB* db = SelectDB(thread);
+
+    while (i < deletes_) {
+      for (int64_t j = 0; j < entries_per_batch_; ++j) {
+        const int64_t k = seq ? i + j : (thread->rand.Next() % FLAGS_num);
+        GenerateKeyFromInt(k, FLAGS_num, &key);
+        batch.Delete(key);
+      }
+      auto s = db->Write(write_options_, &batch);
       if (!s.ok()) {
         fprintf(stderr, "del error: %s\n", s.ToString().c_str());
         exit(1);
