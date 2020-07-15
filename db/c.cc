@@ -2768,6 +2768,12 @@ uint64_t rocksdb_perfcontext_metric(rocksdb_perfcontext_t* context,
       return rep->block_read_byte;
     case rocksdb_block_read_time:
       return rep->block_read_time;
+    case rocksdb_block_read_time_l0:
+      return rep->block_read_time_l0;
+    case rocksdb_block_read_time_l1:
+      return rep->block_read_time_l1;
+    case rocksdb_block_read_time_l2:
+      return rep->block_read_time_l2;
     case rocksdb_block_checksum_time:
       return rep->block_checksum_time;
     case rocksdb_block_decompress_time:

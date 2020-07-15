@@ -195,7 +195,7 @@ inline void BlockFetcher::GetBlockContents() {
 #endif
 }
 
-Status BlockFetcher::ReadBlockContents() {
+Status BlockFetcher::ReadBlockContents(int32_t level) {
   block_size_ = static_cast<size_t>(handle_.size());
 
   if (TryGetUncompressBlockFromPersistentCache()) {
@@ -213,7 +213,22 @@ Status BlockFetcher::ReadBlockContents() {
     PrepareBufferForBlockFromFile();
     Status s;
 
-    {
+    if (level == 0) {
+      PERF_TIMER_GUARD(block_read_time_l0);
+      // Actual file read
+      status_ = file_->Read(handle_.offset(), block_size_ + kBlockTrailerSize,
+                            &slice_, used_buf_, for_compaction_);
+    } else if (level == 1) {
+      PERF_TIMER_GUARD(block_read_time_l1);
+      // Actual file read
+      status_ = file_->Read(handle_.offset(), block_size_ + kBlockTrailerSize,
+                            &slice_, used_buf_, for_compaction_);
+    } else if (level == 2) {
+      PERF_TIMER_GUARD(block_read_time_l2);
+      // Actual file read
+      status_ = file_->Read(handle_.offset(), block_size_ + kBlockTrailerSize,
+                            &slice_, used_buf_, for_compaction_);
+    } else {
       PERF_TIMER_GUARD(block_read_time);
       // Actual file read
       status_ = file_->Read(handle_.offset(), block_size_ + kBlockTrailerSize,

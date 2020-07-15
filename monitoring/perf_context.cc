@@ -44,6 +44,9 @@ PerfContext::PerfContext(const PerfContext& other) {
   block_read_count = other.block_read_count;
   block_read_byte = other.block_read_byte;
   block_read_time = other.block_read_time;
+  block_read_time_l0 = other.block_read_time_l0;
+  block_read_time_l1 = other.block_read_time_l1;
+  block_read_time_l2 = other.block_read_time_l2;
   block_cache_index_hit_count = other.block_cache_index_hit_count;
   index_block_read_count = other.index_block_read_count;
   block_cache_filter_hit_count = other.block_cache_filter_hit_count;
@@ -139,6 +142,9 @@ PerfContext::PerfContext(PerfContext&& other) noexcept {
   block_read_count = other.block_read_count;
   block_read_byte = other.block_read_byte;
   block_read_time = other.block_read_time;
+  block_read_time_l0 = other.block_read_time_l0;
+  block_read_time_l1 = other.block_read_time_l1;
+  block_read_time_l2 = other.block_read_time_l2;
   block_cache_index_hit_count = other.block_cache_index_hit_count;
   index_block_read_count = other.index_block_read_count;
   block_cache_filter_hit_count = other.block_cache_filter_hit_count;
@@ -236,6 +242,9 @@ PerfContext& PerfContext::operator=(const PerfContext& other) {
   block_read_count = other.block_read_count;
   block_read_byte = other.block_read_byte;
   block_read_time = other.block_read_time;
+  block_read_time_l0 = other.block_read_time_l0;
+  block_read_time_l1 = other.block_read_time_l1;
+  block_read_time_l2 = other.block_read_time_l2;
   block_cache_index_hit_count = other.block_cache_index_hit_count;
   index_block_read_count = other.index_block_read_count;
   block_cache_filter_hit_count = other.block_cache_filter_hit_count;
@@ -332,6 +341,9 @@ void PerfContext::Reset() {
   block_read_count = 0;
   block_read_byte = 0;
   block_read_time = 0;
+  block_read_time_l0 = 0;
+  block_read_time_l1 = 0;
+  block_read_time_l2 = 0;
   block_cache_index_hit_count = 0;
   index_block_read_count = 0;
   block_cache_filter_hit_count = 0;
@@ -451,6 +463,9 @@ std::string PerfContext::ToString(bool exclude_zero_counters) const {
   PERF_CONTEXT_OUTPUT(block_read_count);
   PERF_CONTEXT_OUTPUT(block_read_byte);
   PERF_CONTEXT_OUTPUT(block_read_time);
+  PERF_CONTEXT_OUTPUT(block_read_time_l0);
+  PERF_CONTEXT_OUTPUT(block_read_time_l1);
+  PERF_CONTEXT_OUTPUT(block_read_time_l2);
   PERF_CONTEXT_OUTPUT(block_cache_index_hit_count);
   PERF_CONTEXT_OUTPUT(index_block_read_count);
   PERF_CONTEXT_OUTPUT(block_cache_filter_hit_count);
