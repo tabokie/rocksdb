@@ -62,7 +62,7 @@ class BlockFetcher {
         memory_allocator_compressed_(memory_allocator_compressed),
         for_compaction_(for_compaction) {}
 
-  Status ReadBlockContents();
+  Status ReadBlockContents(int32_t level = -1);
   CompressionType get_compression_type() const { return compression_type_; }
 
  private:

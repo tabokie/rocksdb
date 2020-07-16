@@ -135,7 +135,7 @@ Status ReadBlockFromFile(
     const UncompressionDict& uncompression_dict,
     const PersistentCacheOptions& cache_options, SequenceNumber global_seqno,
     size_t read_amp_bytes_per_bit, MemoryAllocator* memory_allocator,
-    bool for_compaction, bool using_zstd) {
+    bool for_compaction, bool using_zstd, int32_t level) {
   assert(result);
 
   BlockContents contents;
@@ -1623,7 +1623,7 @@ Status BlockBasedTable::ReadMetaBlock(FilePrefetchBuffer* prefetch_buffer,
       UncompressionDict::GetEmptyDict(), rep_->persistent_cache_options,
       kDisableGlobalSequenceNumber, 0 /* read_amp_bytes_per_bit */,
       GetMemoryAllocator(rep_->table_options), false /* for_compaction */,
-      rep_->blocks_definitely_zstd_compressed);
+      rep_->blocks_definitely_zstd_compressed, rep_->level);
 
   if (!s.ok()) {
     ROCKS_LOG_ERROR(rep_->ioptions.info_log,
@@ -2171,7 +2171,7 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
             rep_->persistent_cache_options,
             GetMemoryAllocator(rep_->table_options),
             GetMemoryAllocatorForCompressedBlock(rep_->table_options));
-        s = block_fetcher.ReadBlockContents();
+        s = block_fetcher.ReadBlockContents(rep_->level);
         raw_block_comp_type = block_fetcher.get_compression_type();
         contents = &raw_block_contents;
       } else {
@@ -2474,7 +2474,7 @@ Status BlockBasedTable::RetrieveBlock(
             ? rep_->table_options.read_amp_bytes_per_bit
             : 0,
         GetMemoryAllocator(rep_->table_options), for_compaction,
-        rep_->blocks_definitely_zstd_compressed);
+        rep_->blocks_definitely_zstd_compressed, rep_->level);
   }
 
   if (!s.ok()) {
@@ -3770,7 +3770,7 @@ Status BlockBasedTable::VerifyChecksumInBlocks(
         ReadOptions(), handle, &contents, rep_->ioptions,
         false /* decompress */, false /*maybe_compressed*/, BlockType::kData,
         UncompressionDict::GetEmptyDict(), rep_->persistent_cache_options);
-    s = block_fetcher.ReadBlockContents();
+    s = block_fetcher.ReadBlockContents(rep_->level);
     if (!s.ok()) {
       break;
     }
@@ -3829,7 +3829,7 @@ Status BlockBasedTable::VerifyChecksumInMetaBlocks(
         false /* decompress */, false /*maybe_compressed*/,
         GetBlockTypeForMetaBlockByName(meta_block_name),
         UncompressionDict::GetEmptyDict(), rep_->persistent_cache_options);
-    s = block_fetcher.ReadBlockContents();
+    s = block_fetcher.ReadBlockContents(rep_->level);
     if (s.IsCorruption() && meta_block_name == kPropertiesBlock) {
       TableProperties* table_properties;
       s = TryReadPropertiesWithGlobalSeqno(nullptr /* prefetch_buffer */,
