@@ -195,7 +195,9 @@ DEFINE_string(
     "\theapprofile -- Dump a heap profile (if supported by this port)\n"
     "\treplay      -- replay the trace file specified with trace_file\n");
 
+// @tabokie
 DEFINE_string(events, "", "periodical events to inject");
+DEFINE_uint32(client_wait_us, 0, "simulate client work by sleeping for n us");
 
 DEFINE_int64(num, 1000000, "Number of key/values to place in database");
 
@@ -4350,6 +4352,10 @@ class Benchmark {
                                              batches.GetWriteBatch());
       } else if (!use_blob_db_) {
         s = db_with_cfh->db->Write(write_options_, &batch);
+      }
+      // @tabokie
+      if (FLAGS_client_wait_us > 0) {
+        usleep(FLAGS_client_wait_us * entries_per_batch_);
       }
       thread->stats.FinishedOps(db_with_cfh, db_with_cfh->db,
                                 entries_per_batch_, kWrite);
