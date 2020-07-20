@@ -783,6 +783,7 @@ WriteStallCondition ColumnFamilyData::RecalculateWriteStallConditions(
           name_.c_str(), imm()->NumNotFlushed(),
           mutable_cf_options.max_write_buffer_number,
           write_controller->delayed_write_rate());
+      fprintf(stderr, "event: write stall due to memtable too much\n");
     } else if (write_stall_condition == WriteStallCondition::kDelayed &&
                write_stall_cause == WriteStallCause::kL0FileCountLimit) {
       // L0 is the last two files from stopping.
@@ -803,6 +804,7 @@ WriteStallCondition ColumnFamilyData::RecalculateWriteStallConditions(
                      "rate %" PRIu64,
                      name_.c_str(), vstorage->l0_delay_trigger_count(),
                      write_controller->delayed_write_rate());
+      fprintf(stderr, "event: write stall due to L0 too much\n");
     } else if (write_stall_condition == WriteStallCondition::kDelayed &&
                write_stall_cause == WriteStallCause::kPendingCompactionBytes) {
       // If the distance to hard limit is less than 1/4 of the gap between soft
@@ -828,6 +830,7 @@ WriteStallCondition ColumnFamilyData::RecalculateWriteStallConditions(
           "bytes %" PRIu64 " rate %" PRIu64,
           name_.c_str(), vstorage->estimated_compaction_needed_bytes(),
           write_controller->delayed_write_rate());
+      fprintf(stderr, "event: write stall due to compaction too slow\n");
     } else {
       assert(write_stall_condition == WriteStallCondition::kNormal);
       if (vstorage->l0_delay_trigger_count() >=
