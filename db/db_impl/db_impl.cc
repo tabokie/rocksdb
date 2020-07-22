@@ -1566,6 +1566,7 @@ Status DBImpl::GetImpl(const ReadOptions& read_options,
     }
   }
   if (!done) {
+    PERF_COUNTER_ADD(get_from_output_files_count, 1);
     PERF_TIMER_GUARD(get_from_output_files_time);
     sv->current->Get(read_options, lkey, pinnable_val, &s, &merge_context,
                      &max_covering_tombstone_seq, value_found, nullptr, nullptr,
@@ -1741,6 +1742,7 @@ std::vector<Status> DBImpl::MultiGet(
     }
     if (!done) {
       PinnableSlice pinnable_val;
+      PERF_COUNTER_ADD(get_from_output_files_count, 1);
       PERF_TIMER_GUARD(get_from_output_files_time);
       super_version->current->Get(read_options, lkey, &pinnable_val, &s,
                                   &merge_context, &max_covering_tombstone_seq);
@@ -1950,6 +1952,7 @@ void DBImpl::MultiGetImpl(
     }
 
     if (lookup_current) {
+      PERF_COUNTER_ADD(get_from_output_files_count, 1);
       PERF_TIMER_GUARD(get_from_output_files_time);
       super_version->current->MultiGet(read_options, &range, callback,
                                        is_blob_index);

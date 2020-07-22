@@ -2806,6 +2806,8 @@ uint64_t rocksdb_perfcontext_metric(rocksdb_perfcontext_t* context,
       return rep->get_from_memtable_count;
     case rocksdb_get_post_process_time:
       return rep->get_post_process_time;
+    case rocksdb_get_from_output_files_count:
+      return rep->get_from_output_files_count;
     case rocksdb_get_from_output_files_time:
       return rep->get_from_output_files_time;
     case rocksdb_seek_on_memtable_time:

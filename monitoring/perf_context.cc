@@ -70,6 +70,7 @@ PerfContext::PerfContext(const PerfContext& other) {
   get_from_memtable_count = other.get_from_memtable_count;
   get_post_process_time = other.get_post_process_time;
   get_from_output_files_time = other.get_from_output_files_time;
+  get_from_output_files_count = other.get_from_output_files_count;
   seek_on_memtable_time = other.seek_on_memtable_time;
   seek_on_memtable_count = other.seek_on_memtable_count;
   next_on_memtable_count = other.next_on_memtable_count;
@@ -171,6 +172,7 @@ PerfContext::PerfContext(PerfContext&& other) noexcept {
   get_from_memtable_count = other.get_from_memtable_count;
   get_post_process_time = other.get_post_process_time;
   get_from_output_files_time = other.get_from_output_files_time;
+  get_from_output_files_count = other.get_from_output_files_count;
   seek_on_memtable_time = other.seek_on_memtable_time;
   seek_on_memtable_count = other.seek_on_memtable_count;
   next_on_memtable_count = other.next_on_memtable_count;
@@ -271,6 +273,7 @@ PerfContext& PerfContext::operator=(const PerfContext& other) {
   get_from_memtable_count = other.get_from_memtable_count;
   get_post_process_time = other.get_post_process_time;
   get_from_output_files_time = other.get_from_output_files_time;
+  get_from_output_files_count = other.get_from_output_files_count;
   seek_on_memtable_time = other.seek_on_memtable_time;
   seek_on_memtable_count = other.seek_on_memtable_count;
   next_on_memtable_count = other.next_on_memtable_count;
@@ -371,6 +374,7 @@ void PerfContext::Reset() {
   get_from_memtable_count = 0;
   get_post_process_time = 0;
   get_from_output_files_time = 0;
+  get_from_output_files_count = 0;
   seek_on_memtable_time = 0;
   seek_on_memtable_count = 0;
   next_on_memtable_count = 0;
@@ -495,6 +499,7 @@ std::string PerfContext::ToString(bool exclude_zero_counters) const {
   PERF_CONTEXT_OUTPUT(get_from_memtable_count);
   PERF_CONTEXT_OUTPUT(get_post_process_time);
   PERF_CONTEXT_OUTPUT(get_from_output_files_time);
+  PERF_CONTEXT_OUTPUT(get_from_output_files_count);
   PERF_CONTEXT_OUTPUT(seek_on_memtable_time);
   PERF_CONTEXT_OUTPUT(seek_on_memtable_count);
   PERF_CONTEXT_OUTPUT(next_on_memtable_count);

@@ -1065,6 +1065,7 @@ enum {
   rocksdb_get_from_memtable_count,
   rocksdb_get_post_process_time,
   rocksdb_get_from_output_files_time,
+  rocksdb_get_from_output_files_count,
   rocksdb_seek_on_memtable_time,
   rocksdb_seek_on_memtable_count,
   rocksdb_next_on_memtable_count,
