@@ -1086,6 +1086,8 @@ enum {
   rocksdb_read_index_block_nanos,
   rocksdb_read_filter_block_nanos,
   rocksdb_new_table_block_iter_nanos,
+  rocksdb_new_table_block_iter_nocached_nanos,
+  rocksdb_new_index_block_iter_nanos,
   rocksdb_new_table_iterator_nanos,
   rocksdb_block_seek_nanos,
   rocksdb_find_table_nanos,

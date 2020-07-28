@@ -1897,7 +1897,7 @@ TBlockIter* BlockBasedTable::NewDataBlockIterator(
     BlockType block_type, GetContext* get_context,
     BlockCacheLookupContext* lookup_context, Status s,
     FilePrefetchBuffer* prefetch_buffer, bool for_compaction) const {
-  PERF_TIMER_GUARD(new_table_block_iter_nanos);
+  PERF_TIMER_GUARD(new_index_block_iter_nanos);
 
   TBlockIter* iter = input_iter != nullptr ? input_iter : new TBlockIter;
   if (!s.ok()) {
@@ -1922,6 +1922,7 @@ TBlockIter* BlockBasedTable::NewDataBlockIterator(
                                       : UncompressionDict::GetEmptyDict();
 
   CachableEntry<Block> block;
+  // @tabokie: compaction read block
   s = RetrieveBlock(prefetch_buffer, ro, handle, dict, &block, block_type,
                     get_context, lookup_context, for_compaction,
                     /* use_cache */ true);
@@ -2039,6 +2040,7 @@ TBlockIter* BlockBasedTable::NewDataBlockIterator(
                                        block_contents_pinned);
 
   if (!block.IsCached()) {
+    PERF_TIMER_GUARD(new_table_block_iter_nocached_nanos);
     if (!ro.fill_cache && rep_->cache_key_prefix_size != 0) {
       // insert a dummy record to block cache to track the memory usage
       Cache* const block_cache = rep_->table_options.block_cache.get();
@@ -2936,6 +2938,7 @@ void BlockBasedTableIterator<TBlockIter, TValue>::InitDataBlock() {
     }
 
     Status s;
+    // @tabokie: here compaction read block
     table_->NewDataBlockIterator<TBlockIter>(
         read_options_, data_block_handle, &block_iter_, block_type_,
         /*get_context=*/nullptr, &lookup_context_, s, prefetch_buffer_.get(),

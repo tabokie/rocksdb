@@ -92,6 +92,8 @@ PerfContext::PerfContext(const PerfContext& other) {
   read_index_block_nanos = other.read_index_block_nanos;
   read_filter_block_nanos = other.read_filter_block_nanos;
   new_table_block_iter_nanos = other.new_table_block_iter_nanos;
+  new_table_block_iter_nocached_nanos = other.new_table_block_iter_nocached_nanos;
+  new_index_block_iter_nanos = other.new_index_block_iter_nanos;
   new_table_iterator_nanos = other.new_table_iterator_nanos;
   block_seek_nanos = other.block_seek_nanos;
   find_table_nanos = other.find_table_nanos;
@@ -194,6 +196,8 @@ PerfContext::PerfContext(PerfContext&& other) noexcept {
   read_index_block_nanos = other.read_index_block_nanos;
   read_filter_block_nanos = other.read_filter_block_nanos;
   new_table_block_iter_nanos = other.new_table_block_iter_nanos;
+  new_table_block_iter_nocached_nanos = other.new_table_block_iter_nocached_nanos;
+  new_index_block_iter_nanos = other.new_index_block_iter_nanos;
   new_table_iterator_nanos = other.new_table_iterator_nanos;
   block_seek_nanos = other.block_seek_nanos;
   find_table_nanos = other.find_table_nanos;
@@ -295,6 +299,8 @@ PerfContext& PerfContext::operator=(const PerfContext& other) {
   read_index_block_nanos = other.read_index_block_nanos;
   read_filter_block_nanos = other.read_filter_block_nanos;
   new_table_block_iter_nanos = other.new_table_block_iter_nanos;
+  new_table_block_iter_nocached_nanos = other.new_table_block_iter_nocached_nanos;
+  new_index_block_iter_nanos = other.new_index_block_iter_nanos;
   new_table_iterator_nanos = other.new_table_iterator_nanos;
   block_seek_nanos = other.block_seek_nanos;
   find_table_nanos = other.find_table_nanos;
@@ -395,6 +401,8 @@ void PerfContext::Reset() {
   read_index_block_nanos = 0;
   read_filter_block_nanos = 0;
   new_table_block_iter_nanos = 0;
+  new_table_block_iter_nocached_nanos = 0;
+  new_index_block_iter_nanos = 0;
   new_table_iterator_nanos = 0;
   block_seek_nanos = 0;
   find_table_nanos = 0;
@@ -520,6 +528,8 @@ std::string PerfContext::ToString(bool exclude_zero_counters) const {
   PERF_CONTEXT_OUTPUT(read_index_block_nanos);
   PERF_CONTEXT_OUTPUT(read_filter_block_nanos);
   PERF_CONTEXT_OUTPUT(new_table_block_iter_nanos);
+  PERF_CONTEXT_OUTPUT(new_table_block_iter_nocached_nanos);
+  PERF_CONTEXT_OUTPUT(new_index_block_iter_nanos);
   PERF_CONTEXT_OUTPUT(new_table_iterator_nanos);
   PERF_CONTEXT_OUTPUT(block_seek_nanos);
   PERF_CONTEXT_OUTPUT(find_table_nanos);

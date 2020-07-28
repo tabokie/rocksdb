@@ -2850,6 +2850,10 @@ uint64_t rocksdb_perfcontext_metric(rocksdb_perfcontext_t* context,
       return rep->read_filter_block_nanos;
     case rocksdb_new_table_block_iter_nanos:
       return rep->new_table_block_iter_nanos;
+    case rocksdb_new_table_block_iter_nocached_nanos:
+      return rep->new_table_block_iter_nocached_nanos;
+    case rocksdb_new_index_block_iter_nanos:
+      return rep->new_index_block_iter_nanos;
     case rocksdb_new_table_iterator_nanos:
       return rep->new_table_iterator_nanos;
     case rocksdb_block_seek_nanos:
