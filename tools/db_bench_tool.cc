@@ -966,6 +966,7 @@ DEFINE_bool(rate_limiter_auto_tuned, false,
             "Enable dynamic adjustment of rate limit according to demand for "
             "background I/O");
 
+DEFINE_uint64(refill_period_us, 100000, "refill period for rate limiter");
 
 DEFINE_bool(sine_write_rate, false,
             "Use a sine wave write_rate_limit");
@@ -3229,7 +3230,7 @@ class Benchmark {
     }
     if (FLAGS_benchmark_read_rate_limit > 0) {
       shared.read_rate_limiter.reset(NewGenericRateLimiter(
-          FLAGS_benchmark_read_rate_limit, 100000 /* refill_period_us */,
+          FLAGS_benchmark_read_rate_limit, FLAGS_refill_period_us,
           10 /* fairness */, RateLimiter::Mode::kReadsOnly));
     }
 
@@ -3917,7 +3918,7 @@ class Benchmark {
         exit(1);
       }
       options.rate_limiter.reset(NewGenericRateLimiter(
-          FLAGS_rate_limiter_bytes_per_sec, 100 * 1000 /* refill_period_us */,
+          FLAGS_rate_limiter_bytes_per_sec, FLAGS_refill_period_us,
           10 /* fairness */,
           FLAGS_rate_limit_bg_reads ? RateLimiter::Mode::kReadsOnly
                                     : RateLimiter::Mode::kWritesOnly,
@@ -5107,7 +5108,7 @@ class Benchmark {
     // the limit of qps initiation
     if (FLAGS_sine_a != 0 || FLAGS_sine_d != 0) {
       thread->shared->read_rate_limiter.reset(NewGenericRateLimiter(
-          static_cast<int64_t>(read_rate), 100000 /* refill_period_us */, 10 /* fairness */,
+          static_cast<int64_t>(read_rate), FLAGS_refill_period_us, 10 /* fairness */,
           RateLimiter::Mode::kReadsOnly));
       thread->shared->write_rate_limiter.reset(
           NewGenericRateLimiter(static_cast<int64_t>(write_rate)));
