@@ -2762,6 +2762,10 @@ uint64_t rocksdb_perfcontext_metric(rocksdb_perfcontext_t* context,
       return rep->user_key_comparison_count;
     case rocksdb_block_cache_hit_count:
       return rep->block_cache_hit_count;
+    case rocksdb_filter_read_count:
+      return rep->filter_read_count;
+    case rocksdb_filter_cache_miss_count:
+      return rep->filter_cache_miss_count;
     case rocksdb_block_read_count:
       return rep->block_read_count;
     case rocksdb_block_read_count_l0:

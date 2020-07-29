@@ -17,6 +17,7 @@ Status FilterBlockReaderCommon<TBlocklike>::ReadFilterBlock(
     BlockCacheLookupContext* lookup_context,
     CachableEntry<TBlocklike>* filter_block) {
   PERF_TIMER_GUARD(read_filter_block_nanos);
+  PERF_COUNTER_ADD(filter_read_count, 1);
 
   assert(table);
   assert(filter_block);

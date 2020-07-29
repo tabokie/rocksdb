@@ -1042,6 +1042,8 @@ enum {
 enum {
   rocksdb_user_key_comparison_count = 0,
   rocksdb_block_cache_hit_count,
+  rocksdb_filter_read_count,
+  rocksdb_filter_cache_miss_count,
   rocksdb_block_read_count,
   rocksdb_block_read_count_l0,
   rocksdb_block_read_count_l1,

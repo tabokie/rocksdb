@@ -2156,6 +2156,7 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
     // Can't find the block from the cache. If I/O is allowed, read from the
     // file.
     if (block_entry->GetValue() == nullptr && !no_io && ro.fill_cache) {
+      PERF_COUNTER_ADD(filter_cache_miss_count, 1);
       Statistics* statistics = rep_->ioptions.statistics;
       const bool maybe_compressed =
           block_type != BlockType::kFilter &&
