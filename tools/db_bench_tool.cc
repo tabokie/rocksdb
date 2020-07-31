@@ -2839,17 +2839,17 @@ class Benchmark {
           method = &Benchmark::WriteUniqueRandomDeterministic;
         }
       } else if (name == "fillseq") {
-        fresh_db = true;
+        // fresh_db = true;
         method = &Benchmark::WriteSeq;
       } else if (name == "fillbatch") {
-        fresh_db = true;
+        // fresh_db = true;
         entries_per_batch_ = 1000;
         method = &Benchmark::WriteSeq;
       } else if (name == "fillrandom") {
-        fresh_db = true;
+        // fresh_db = true;
         method = &Benchmark::WriteRandom;
       } else if (name == "filluniquerandom") {
-        fresh_db = true;
+        // fresh_db = true;
         if (num_threads > 1) {
           fprintf(stderr,
                   "filluniquerandom multithreaded not supported"
@@ -2860,12 +2860,12 @@ class Benchmark {
       } else if (name == "overwrite") {
         method = &Benchmark::WriteRandom;
       } else if (name == "fillsync") {
-        fresh_db = true;
+        // fresh_db = true;
         num_ /= 1000;
         write_options_.sync = true;
         method = &Benchmark::WriteRandom;
       } else if (name == "fill100K") {
-        fresh_db = true;
+        // fresh_db = true;
         num_ /= 1000;
         value_size_ = 100 * 1000;
         method = &Benchmark::WriteRandom;
