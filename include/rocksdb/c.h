@@ -1044,6 +1044,7 @@ enum {
   rocksdb_block_cache_hit_count,
   rocksdb_filter_read_count,
   rocksdb_filter_cache_miss_count,
+  rocksdb_new_index_block_iter_count,
   rocksdb_block_read_count,
   rocksdb_block_read_count_l0,
   rocksdb_block_read_count_l1,

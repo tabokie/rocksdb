@@ -1898,6 +1898,8 @@ TBlockIter* BlockBasedTable::NewDataBlockIterator(
     BlockCacheLookupContext* lookup_context, Status s,
     FilePrefetchBuffer* prefetch_buffer, bool for_compaction) const {
   PERF_TIMER_GUARD(new_index_block_iter_nanos);
+  PERF_COUNTER_ADD(new_index_block_iter_count, 1);
+
 
   TBlockIter* iter = input_iter != nullptr ? input_iter : new TBlockIter;
   if (!s.ok()) {

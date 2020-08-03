@@ -389,7 +389,7 @@ int main(int argc, char** argv) {
 }
 #else   // OS_LINUX
 int main() {
-  fpritnf(stderr, "Not implemented.\n");
+  fprintf(stderr, "Not implemented.\n");
   return 0;
 }
 #endif  // !OS_LINUX

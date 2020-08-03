@@ -43,6 +43,7 @@ PerfContext::PerfContext(const PerfContext& other) {
   block_cache_hit_count = other.block_cache_hit_count;
   filter_read_count = other.filter_read_count;
   filter_cache_miss_count = other.filter_cache_miss_count;
+  new_index_block_iter_count = other.new_index_block_iter_count;
   block_read_count = other.block_read_count;
   block_read_count_l0 = other.block_read_count_l0;
   block_read_count_l1 = other.block_read_count_l1;
@@ -149,6 +150,7 @@ PerfContext::PerfContext(PerfContext&& other) noexcept {
   block_cache_hit_count = other.block_cache_hit_count;
   filter_read_count = other.filter_read_count;
   filter_cache_miss_count = other.filter_cache_miss_count;
+  new_index_block_iter_count = other.new_index_block_iter_count;
   block_read_count = other.block_read_count;
   block_read_count_l0 = other.block_read_count_l0;
   block_read_count_l1 = other.block_read_count_l1;
@@ -484,6 +486,7 @@ std::string PerfContext::ToString(bool exclude_zero_counters) const {
   PERF_CONTEXT_OUTPUT(block_cache_hit_count);
   PERF_CONTEXT_OUTPUT(filter_read_count);
   PERF_CONTEXT_OUTPUT(filter_cache_miss_count);
+  PERF_CONTEXT_OUTPUT(new_index_block_iter_count);
   PERF_CONTEXT_OUTPUT(block_read_count);
   PERF_CONTEXT_OUTPUT(block_read_count_l0);
   PERF_CONTEXT_OUTPUT(block_read_count_l1);

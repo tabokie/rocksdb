@@ -2770,6 +2770,8 @@ uint64_t rocksdb_perfcontext_metric(rocksdb_perfcontext_t* context,
       return rep->block_read_count;
     case rocksdb_block_read_count_l0:
       return rep->block_read_count_l0;
+    case rocksdb_new_index_block_iter_count:
+      return rep->new_index_block_iter_count;
     case rocksdb_block_read_count_l1:
       return rep->block_read_count_l1;
     case rocksdb_block_read_count_l2:
