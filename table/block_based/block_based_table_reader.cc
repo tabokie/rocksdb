@@ -295,6 +295,7 @@ Status BlockBasedTable::IndexReaderCommon::ReadIndexBlock(
     BlockCacheLookupContext* lookup_context,
     CachableEntry<Block>* index_block) {
   PERF_TIMER_GUARD(read_index_block_nanos);
+  PERF_COUNTER_ADD(read_index_block_count, 1);
 
   assert(table != nullptr);
   assert(index_block != nullptr);
@@ -2157,8 +2158,12 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
 
     // Can't find the block from the cache. If I/O is allowed, read from the
     // file.
+    if (block_entry->GetValue() == nullptr) {
+      if (block_type == BlockType::kFilter) {
+        PERF_COUNTER_ADD(filter_cache_miss_count, 1);
+      }
+    }
     if (block_entry->GetValue() == nullptr && !no_io && ro.fill_cache) {
-      PERF_COUNTER_ADD(filter_cache_miss_count, 1);
       Statistics* statistics = rep_->ioptions.statistics;
       const bool maybe_compressed =
           block_type != BlockType::kFilter &&

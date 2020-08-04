@@ -179,6 +179,7 @@ struct PerfContext {
 
   // Time spent on reading index block from block cache or SST file
   uint64_t read_index_block_nanos;
+  uint64_t read_index_block_count;
   // Time spent on reading filter block from block cache or SST file
   uint64_t read_filter_block_nanos;
   // Time spent on creating data block iterator
