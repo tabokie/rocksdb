@@ -2145,7 +2145,17 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
                          compressed_cache_key);
     }
 
-    if (!contents) {
+    if (!contents && block_type == BlockType::kIndex) {
+      PERF_TIMER_GUARD(read_index_block_c);
+      s = GetDataBlockFromCache(key, ckey, block_cache, block_cache_compressed,
+                                ro, block_entry, uncompression_dict, block_type,
+                                get_context);
+      if (block_entry->GetValue()) {
+        // TODO(haoyu): Differentiate cache hit on uncompressed block cache and
+        // compressed block cache.
+        is_cache_hit = true;
+      }
+    } else if (!contents) {
       s = GetDataBlockFromCache(key, ckey, block_cache, block_cache_compressed,
                                 ro, block_entry, uncompression_dict, block_type,
                                 get_context);
@@ -2189,14 +2199,26 @@ Status BlockBasedTable::MaybeReadBlockAndLoadToCache(
       }
 
       if (s.ok()) {
-        SequenceNumber seq_no = rep_->get_global_seqno(block_type);
-        // If filling cache is allowed and a cache is configured, try to put the
-        // block to the cache.
-        s = PutDataBlockToCache(key, ckey, block_cache, block_cache_compressed,
-                                block_entry, contents,
-                                raw_block_comp_type, uncompression_dict, seq_no,
-                                GetMemoryAllocator(rep_->table_options),
-                                block_type, get_context);
+        if (block_type == BlockType::kIndex) {
+          PERF_TIMER_GUARD(read_index_block_d);
+          SequenceNumber seq_no = rep_->get_global_seqno(block_type);
+          // If filling cache is allowed and a cache is configured, try to put
+          // the
+          // block to the cache.
+          s = PutDataBlockToCache(
+              key, ckey, block_cache, block_cache_compressed, block_entry,
+              contents, raw_block_comp_type, uncompression_dict, seq_no,
+              GetMemoryAllocator(rep_->table_options), block_type, get_context);
+        } else {
+          SequenceNumber seq_no = rep_->get_global_seqno(block_type);
+          // If filling cache is allowed and a cache is configured, try to put
+          // the
+          // block to the cache.
+          s = PutDataBlockToCache(
+              key, ckey, block_cache, block_cache_compressed, block_entry,
+              contents, raw_block_comp_type, uncompression_dict, seq_no,
+              GetMemoryAllocator(rep_->table_options), block_type, get_context);
+        }
       }
     }
   }
@@ -2443,10 +2465,18 @@ Status BlockBasedTable::RetrieveBlock(
 
   Status s;
   if (use_cache) {
-    s = MaybeReadBlockAndLoadToCache(prefetch_buffer, ro, handle,
-                                     uncompression_dict, block_entry,
-                                     block_type, get_context, lookup_context,
-                                     /*contents=*/nullptr);
+    if (block_type == BlockType::kIndex) {
+      PERF_TIMER_GUARD(read_index_block_a);
+      s = MaybeReadBlockAndLoadToCache(prefetch_buffer, ro, handle,
+                                       uncompression_dict, block_entry,
+                                       block_type, get_context, lookup_context,
+                                       /*contents=*/nullptr);
+    } else {
+      s = MaybeReadBlockAndLoadToCache(prefetch_buffer, ro, handle,
+                                       uncompression_dict, block_entry,
+                                       block_type, get_context, lookup_context,
+                                       /*contents=*/nullptr);
+    }
 
     if (!s.ok()) {
       return s;
@@ -2472,7 +2502,21 @@ Status BlockBasedTable::RetrieveBlock(
   const bool do_uncompress = maybe_compressed;
   std::unique_ptr<TBlocklike> block;
 
-  {
+  if (block_type == BlockType::kIndex) {
+    PERF_TIMER_GUARD(read_index_block_b);
+    StopWatch sw(rep_->ioptions.env, rep_->ioptions.statistics,
+                 READ_BLOCK_GET_MICROS);
+    s = ReadBlockFromFile(
+        rep_->file.get(), prefetch_buffer, rep_->footer, ro, handle, &block,
+        rep_->ioptions, do_uncompress, maybe_compressed, block_type,
+        uncompression_dict, rep_->persistent_cache_options,
+        rep_->get_global_seqno(block_type),
+        block_type == BlockType::kData
+            ? rep_->table_options.read_amp_bytes_per_bit
+            : 0,
+        GetMemoryAllocator(rep_->table_options), for_compaction,
+        rep_->blocks_definitely_zstd_compressed, rep_->level);
+  } else {
     StopWatch sw(rep_->ioptions.env, rep_->ioptions.statistics,
                  READ_BLOCK_GET_MICROS);
     s = ReadBlockFromFile(

@@ -2854,6 +2854,14 @@ uint64_t rocksdb_perfcontext_metric(rocksdb_perfcontext_t* context,
       return rep->read_index_block_nanos;
     case rocksdb_read_index_block_count:
       return rep->read_index_block_count;
+    case rocksdb_read_index_block_a:
+      return rep->read_index_block_a;
+    case rocksdb_read_index_block_b:
+      return rep->read_index_block_b;
+    case rocksdb_read_index_block_c:
+      return rep->read_index_block_c;
+    case rocksdb_read_index_block_d:
+      return rep->read_index_block_d;
     case rocksdb_read_filter_block_nanos:
       return rep->read_filter_block_nanos;
     case rocksdb_new_table_block_iter_nanos:

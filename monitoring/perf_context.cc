@@ -93,6 +93,10 @@ PerfContext::PerfContext(const PerfContext& other) {
   db_condition_wait_nanos = other.db_condition_wait_nanos;
   merge_operator_time_nanos = other.merge_operator_time_nanos;
   read_index_block_nanos = other.read_index_block_nanos;
+  read_index_block_a = other.read_index_block_a;
+  read_index_block_b = other.read_index_block_b;
+  read_index_block_c = other.read_index_block_c;
+  read_index_block_d = other.read_index_block_d;
   read_index_block_count = other.read_index_block_count;
   read_filter_block_nanos = other.read_filter_block_nanos;
   new_table_block_iter_nanos = other.new_table_block_iter_nanos;
@@ -201,6 +205,10 @@ PerfContext::PerfContext(PerfContext&& other) noexcept {
   db_condition_wait_nanos = other.db_condition_wait_nanos;
   merge_operator_time_nanos = other.merge_operator_time_nanos;
   read_index_block_nanos = other.read_index_block_nanos;
+  read_index_block_a = other.read_index_block_a;
+  read_index_block_b = other.read_index_block_b;
+  read_index_block_c = other.read_index_block_c;
+  read_index_block_d = other.read_index_block_d;
   read_index_block_count = other.read_index_block_count;
   read_filter_block_nanos = other.read_filter_block_nanos;
   new_table_block_iter_nanos = other.new_table_block_iter_nanos;
@@ -305,6 +313,10 @@ PerfContext& PerfContext::operator=(const PerfContext& other) {
   db_condition_wait_nanos = other.db_condition_wait_nanos;
   merge_operator_time_nanos = other.merge_operator_time_nanos;
   read_index_block_nanos = other.read_index_block_nanos;
+  read_index_block_a = other.read_index_block_a;
+  read_index_block_b = other.read_index_block_b;
+  read_index_block_c = other.read_index_block_c;
+  read_index_block_d = other.read_index_block_d;
   read_index_block_count = other.read_index_block_count;
   read_filter_block_nanos = other.read_filter_block_nanos;
   new_table_block_iter_nanos = other.new_table_block_iter_nanos;
@@ -408,6 +420,10 @@ void PerfContext::Reset() {
   db_condition_wait_nanos = 0;
   merge_operator_time_nanos = 0;
   read_index_block_nanos = 0;
+  read_index_block_a = 0;
+  read_index_block_b = 0;
+  read_index_block_c = 0;
+  read_index_block_d = 0;
   read_index_block_count = 0;
   read_filter_block_nanos = 0;
   new_table_block_iter_nanos = 0;
@@ -539,6 +555,10 @@ std::string PerfContext::ToString(bool exclude_zero_counters) const {
   PERF_CONTEXT_OUTPUT(merge_operator_time_nanos);
   PERF_CONTEXT_OUTPUT(write_delay_time);
   PERF_CONTEXT_OUTPUT(read_index_block_nanos);
+  PERF_CONTEXT_OUTPUT(read_index_block_a);
+  PERF_CONTEXT_OUTPUT(read_index_block_b);
+  PERF_CONTEXT_OUTPUT(read_index_block_c);
+  PERF_CONTEXT_OUTPUT(read_index_block_d);
   PERF_CONTEXT_OUTPUT(read_index_block_count);
   PERF_CONTEXT_OUTPUT(read_filter_block_nanos);
   PERF_CONTEXT_OUTPUT(new_table_block_iter_nanos);
