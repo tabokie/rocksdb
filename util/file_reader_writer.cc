@@ -409,17 +409,28 @@ Status WritableFileWriter::Flush() {
   //     the page.
   // Xfs does neighbor page flushing outside of the specified ranges. We
   // need to make sure sync range is far from the write offset.
-  if (!use_direct_io() && bytes_per_sync_) {
+  if (!use_direct_io() && rate_limiter_ != nullptr) {
     const uint64_t kBytesNotSyncRange = 1024 * 1024;  // recent 1MB is not synced.
     const uint64_t kBytesAlignWhenSync = 4 * 1024;    // Align 4KB.
     if (filesize_ > kBytesNotSyncRange) {
       uint64_t offset_sync_to = filesize_ - kBytesNotSyncRange;
       offset_sync_to -= offset_sync_to % kBytesAlignWhenSync;
       assert(offset_sync_to >= last_sync_size_);
-      if (offset_sync_to > 0 &&
-          offset_sync_to - last_sync_size_ >= bytes_per_sync_) {
-        s = RangeSync(last_sync_size_, offset_sync_to - last_sync_size_);
-        last_sync_size_ = offset_sync_to;
+      if (offset_sync_to > 0) {
+        uint64_t pos = last_sync_size_;
+        uint64_t allowed = 0;
+        while (offset_sync_to > pos) {
+          allowed = rate_limiter_->RequestToken(
+              offset_sync_to - pos, 0, writable_file_->GetIOPriority(), stats_,
+              RateLimiter::OpType::kWrite);
+          s = RangeSync(pos, allowed);
+          if (s.ok()) {
+            last_sync_size_ = pos;
+            pos += allowed;
+          } else {
+            break;
+          }
+        }
       }
     }
   }
@@ -487,13 +498,14 @@ Status WritableFileWriter::WriteBuffered(const char* data, size_t size) {
 
   while (left > 0) {
     size_t allowed;
-    if (rate_limiter_ != nullptr) {
-      allowed = rate_limiter_->RequestToken(
-          left, 0 /* alignment */, writable_file_->GetIOPriority(), stats_,
-          RateLimiter::OpType::kWrite);
-    } else {
-      allowed = left;
-    }
+    // if (rate_limiter_ != nullptr) {
+    //   allowed = rate_limiter_->RequestToken(
+    //       left, 0 /* alignment */, writable_file_->GetIOPriority(), stats_,
+    //       RateLimiter::OpType::kWrite);
+    // } else {
+    //   allowed = left;
+    // }
+    allowed = left;
 
     {
       IOSTATS_TIMER_GUARD(write_nanos);
