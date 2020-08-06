@@ -1094,6 +1094,9 @@ DEFINE_uint64(bytes_per_sync,  rocksdb::Options().bytes_per_sync,
               " being written, in the background. Issue one request for every"
               " bytes_per_sync written. 0 turns it off.");
 
+DEFINE_bool(strict_bytes_per_sync, rocksdb::Options().strict_bytes_per_sync,
+            "");
+
 DEFINE_uint64(wal_bytes_per_sync,  rocksdb::Options().wal_bytes_per_sync,
               "Allows OS to incrementally sync WAL files to disk while they are"
               " being written, in the background. Issue one request for every"
@@ -3800,6 +3803,7 @@ class Benchmark {
     options.access_hint_on_compaction_start = FLAGS_compaction_fadvice_e;
     options.use_adaptive_mutex = FLAGS_use_adaptive_mutex;
     options.bytes_per_sync = FLAGS_bytes_per_sync;
+    options.strict_bytes_per_sync = FLAGS_strict_bytes_per_sync;
     options.wal_bytes_per_sync = FLAGS_wal_bytes_per_sync;
 
     // merge operator options
