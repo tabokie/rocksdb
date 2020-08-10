@@ -565,6 +565,7 @@ struct DBOptions {
   // smaller ones that are run simultaneously.
   // Default: 1 (i.e. no subcompactions)
   uint32_t max_subcompactions = 1;
+  bool high_pri_compaction = false;
 
   // NOT SUPPORTED ANYMORE: RocksDB automatically decides this based on the
   // value of max_background_jobs. For backwards compatibility we will set

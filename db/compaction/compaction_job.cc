@@ -1469,7 +1469,11 @@ Status CompactionJob::OpenCompactionOutputFile(
   out.finished = false;
 
   sub_compact->outputs.push_back(out);
-  writable_file->SetIOPriority(Env::IO_LOW);
+  if (thread_pri_ == Env::Priority::HIGH) {
+    writable_file->SetIOPriority(Env::IO_HIGH);
+  } else {
+    writable_file->SetIOPriority(Env::IO_LOW);
+  }
   writable_file->SetWriteLifeTimeHint(write_hint_);
   writable_file->SetPreallocationBlockSize(static_cast<size_t>(
       sub_compact->compaction->OutputFilePreallocationSize()));

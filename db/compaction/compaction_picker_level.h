@@ -25,7 +25,15 @@ class LevelCompactionPicker : public CompactionPicker {
       VersionStorageInfo* vstorage, LogBuffer* log_buffer,
       SequenceNumber earliest_memtable_seqno = kMaxSequenceNumber) override;
 
+  virtual Compaction* PickPrioritizedCompaction(
+      const std::string& cf_name, const MutableCFOptions& mutable_cf_options,
+      VersionStorageInfo* vstorage, LogBuffer* log_buffer,
+      SequenceNumber earliest_memtable_seqno = kMaxSequenceNumber) override;
+
   virtual bool NeedsCompaction(
+      const VersionStorageInfo* vstorage) const override;
+
+  virtual bool NeedsPrioritizedCompaction(
       const VersionStorageInfo* vstorage) const override;
 };
 

@@ -35,6 +35,7 @@ ImmutableDBOptions::ImmutableDBOptions(const DBOptions& options)
       db_log_dir(options.db_log_dir),
       wal_dir(options.wal_dir),
       max_subcompactions(options.max_subcompactions),
+      high_pri_compaction(options.high_pri_compaction),
       max_background_flushes(options.max_background_flushes),
       max_log_file_size(options.max_log_file_size),
       log_file_time_to_roll(options.log_file_time_to_roll),

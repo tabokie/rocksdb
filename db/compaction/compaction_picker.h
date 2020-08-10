@@ -59,6 +59,14 @@ class CompactionPicker {
       VersionStorageInfo* vstorage, LogBuffer* log_buffer,
       SequenceNumber earliest_memtable_seqno = kMaxSequenceNumber) = 0;
 
+  virtual Compaction* PickPrioritizedCompaction(
+      const std::string& cf_name, const MutableCFOptions& mutable_cf_options,
+      VersionStorageInfo* vstorage, LogBuffer* log_buffer,
+      SequenceNumber earliest_memtable_seqno = kMaxSequenceNumber) {
+    return PickCompaction(cf_name, mutable_cf_options, vstorage, log_buffer,
+                          earliest_memtable_seqno);
+  }
+
   // Return a compaction object for compacting the range [begin,end] in
   // the specified level.  Returns nullptr if there is nothing in that
   // level that overlaps the specified range.  Caller should delete
@@ -82,6 +90,10 @@ class CompactionPicker {
   virtual int MaxOutputLevel() const { return NumberLevels() - 1; }
 
   virtual bool NeedsCompaction(const VersionStorageInfo* vstorage) const = 0;
+
+  virtual bool NeedsPrioritizedCompaction(const VersionStorageInfo*) const {
+    return false;
+  }
 
 // Sanitize the input set of compaction input files.
 // When the input parameters do not describe a valid compaction, the

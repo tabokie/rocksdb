@@ -366,6 +366,8 @@ DEFINE_int32(base_background_compactions, -1, "DEPRECATED");
 DEFINE_uint64(subcompactions, 1,
               "Maximum number of subcompactions to divide L0-L1 compactions "
               "into.");
+DEFINE_bool(high_pri_compaction, false,
+            "whether use high-pri thread pool to do L0 compaction");
 static const bool FLAGS_subcompactions_dummy
     __attribute__((__unused__)) = RegisterFlagValidator(&FLAGS_subcompactions,
                                                     &ValidateUint32Range);
@@ -3509,6 +3511,7 @@ class Benchmark {
     options.max_background_jobs = FLAGS_max_background_jobs;
     options.max_background_compactions = FLAGS_max_background_compactions;
     options.max_subcompactions = static_cast<uint32_t>(FLAGS_subcompactions);
+    options.high_pri_compaction = FLAGS_high_pri_compaction;
     options.max_background_flushes = FLAGS_max_background_flushes;
     options.compaction_style = FLAGS_compaction_style_e;
     options.compaction_pri = FLAGS_compaction_pri_e;

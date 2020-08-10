@@ -39,6 +39,11 @@ bool LevelCompactionPicker::NeedsCompaction(
   return false;
 }
 
+bool LevelCompactionPicker::NeedsPrioritizedCompaction(
+    const VersionStorageInfo* vstorage) const {
+  return vstorage->CompactionScore(0) >= 1;
+}
+
 namespace {
 // A class to build a leveled compaction step-by-step.
 class LevelCompactionBuilder {
@@ -60,6 +65,7 @@ class LevelCompactionBuilder {
 
   // Pick and return a compaction.
   Compaction* PickCompaction();
+  Compaction* PickL0Compaction();
 
   // Pick the initial files to compact to the next level. (or together
   // in Intra-L0 compactions)
@@ -373,6 +379,34 @@ Compaction* LevelCompactionBuilder::PickCompaction() {
   return c;
 }
 
+Compaction* LevelCompactionBuilder::PickL0Compaction() {
+  // Pick up the first file to start compaction. It may have been extended
+  // to a clean cut.
+  SetupInitialFiles();
+  if (start_level_inputs_.empty() || start_level_ > 0) {
+    return nullptr;
+  }
+
+  // If it is a L0 -> base level compaction, we need to set up other L0
+  // files if needed.
+  if (!SetupOtherL0FilesIfNeeded()) {
+    return nullptr;
+  }
+
+  // Pick files in the output level and expand more files in the start level
+  // if needed.
+  if (!SetupOtherInputsIfNeeded()) {
+    return nullptr;
+  }
+
+  // Form a compaction object containing the files we picked.
+  Compaction* c = GetCompaction();
+
+  TEST_SYNC_POINT_CALLBACK("LevelCompactionPicker::PickCompaction:Return", c);
+
+  return c;
+}
+
 Compaction* LevelCompactionBuilder::GetCompaction() {
   auto c = new Compaction(
       vstorage_, ioptions_, mutable_cf_options_, std::move(compaction_inputs_),
@@ -555,4 +589,14 @@ Compaction* LevelCompactionPicker::PickCompaction(
                                  log_buffer, mutable_cf_options, ioptions_);
   return builder.PickCompaction();
 }
+
+Compaction* LevelCompactionPicker::PickPrioritizedCompaction(
+    const std::string& cf_name, const MutableCFOptions& mutable_cf_options,
+    VersionStorageInfo* vstorage, LogBuffer* log_buffer,
+    SequenceNumber earliest_mem_seqno) {
+  LevelCompactionBuilder builder(cf_name, vstorage, earliest_mem_seqno, this,
+                                 log_buffer, mutable_cf_options, ioptions_);
+  return builder.PickL0Compaction();
+}
+
 }  // namespace rocksdb

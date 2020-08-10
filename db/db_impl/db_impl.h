@@ -1235,6 +1235,13 @@ class DBImpl : public DB {
     PrepickedCompaction* prepicked_compaction;
   };
 
+  struct PrioritizedCompactionArg {
+    // caller retains ownership of `db`.
+    DBImpl* db;
+    // background compaction takes ownership of `prepicked_compaction`.
+    ColumnFamilyData* cfd;
+  };
+
   // Initialize the built-in column family for persistent stats. Depending on
   // whether on-disk persistent stats have been enabled before, it may either
   // create a new column family and column family handle or just a column family
@@ -1461,15 +1468,19 @@ class DBImpl : public DB {
   void SchedulePendingPurge(std::string fname, std::string dir_to_sync,
                             FileType type, uint64_t number, int job_id);
   static void BGWorkCompaction(void* arg);
+  static void BGWorkPrioritizedCompaction(void* arg);
   // Runs a pre-chosen universal compaction involving bottom level in a
   // separate, bottom-pri thread pool.
   static void BGWorkBottomCompaction(void* arg);
   static void BGWorkFlush(void* arg);
   static void BGWorkPurge(void* arg);
   static void UnscheduleCompactionCallback(void* arg);
+  static void UnschedulePrioritizedCompactionCallback(void* arg);
   static void UnscheduleFlushCallback(void* arg);
   void BackgroundCallCompaction(PrepickedCompaction* prepicked_compaction,
                                 Env::Priority thread_pri);
+  void BackgroundCallPrioritizedCompaction(ColumnFamilyData* cfd,
+                                           Env::Priority thread_pri);
   void BackgroundCallFlush(Env::Priority thread_pri);
   void BackgroundCallPurge();
   Status BackgroundCompaction(bool* madeProgress, JobContext* job_context,

@@ -918,18 +918,31 @@ void ColumnFamilyData::CreateNewMemtable(
   mem_->Ref();
 }
 
-bool ColumnFamilyData::NeedsCompaction() const {
-  return compaction_picker_->NeedsCompaction(current_->storage_info());
+bool ColumnFamilyData::NeedsCompaction(bool prioritized) const {
+  if (prioritized) {
+    return compaction_picker_->NeedsPrioritizedCompaction(
+        current_->storage_info());
+  } else {
+    return compaction_picker_->NeedsCompaction(current_->storage_info());
+  }
 }
 
 Compaction* ColumnFamilyData::PickCompaction(
-    const MutableCFOptions& mutable_options, LogBuffer* log_buffer) {
+    const MutableCFOptions& mutable_options, LogBuffer* log_buffer,
+    bool prioritized) {
   SequenceNumber earliest_mem_seqno =
       std::min(mem_->GetEarliestSequenceNumber(),
                imm_.current()->GetEarliestSequenceNumber(false));
-  auto* result = compaction_picker_->PickCompaction(
-      GetName(), mutable_options, current_->storage_info(), log_buffer,
-      earliest_mem_seqno);
+  Compaction* result;
+  if (prioritized) {
+    result = compaction_picker_->PickPrioritizedCompaction(
+        GetName(), mutable_options, current_->storage_info(), log_buffer,
+        earliest_mem_seqno);
+  } else {
+    result = compaction_picker_->PickCompaction(GetName(), mutable_options,
+                                                current_->storage_info(),
+                                                log_buffer, earliest_mem_seqno);
+  }
   if (result != nullptr) {
     result->SetInputVersion(current_);
   }

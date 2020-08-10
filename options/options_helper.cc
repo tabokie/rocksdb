@@ -62,6 +62,7 @@ DBOptions BuildDBOptions(const ImmutableDBOptions& immutable_db_options,
   options.wal_bytes_per_sync = mutable_db_options.wal_bytes_per_sync;
   options.strict_bytes_per_sync = mutable_db_options.strict_bytes_per_sync;
   options.max_subcompactions = immutable_db_options.max_subcompactions;
+  options.high_pri_compaction = immutable_db_options.high_pri_compaction;
   options.max_background_flushes = immutable_db_options.max_background_flushes;
   options.max_log_file_size = immutable_db_options.max_log_file_size;
   options.log_file_time_to_roll = immutable_db_options.log_file_time_to_roll;
@@ -1539,6 +1540,9 @@ std::unordered_map<std::string, OptionTypeInfo>
           OptionVerificationType::kNormal, false, 0}},
         {"max_subcompactions",
          {offsetof(struct DBOptions, max_subcompactions), OptionType::kUInt32T,
+          OptionVerificationType::kNormal, false, 0}},
+        {"high_pri_compaction",
+         {offsetof(struct DBOptions, high_pri_compaction), OptionType::kBoolean,
           OptionVerificationType::kNormal, false, 0}},
         {"WAL_size_limit_MB",
          {offsetof(struct DBOptions, WAL_size_limit_MB), OptionType::kUInt64T,

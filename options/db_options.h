@@ -34,6 +34,7 @@ struct ImmutableDBOptions {
   std::string db_log_dir;
   std::string wal_dir;
   uint32_t max_subcompactions;
+  bool high_pri_compaction;
   int max_background_flushes;
   size_t max_log_file_size;
   size_t log_file_time_to_roll;
