@@ -309,6 +309,8 @@ class WritableFileWriter {
 #endif  // !ROCKSDB_LITE
   // Normal write
   Status WriteBuffered(const char* data, size_t size);
+  // sync OS cache to disk for every bytes_per_sync_
+  Status IncrementalSync();
   Status RangeSync(uint64_t offset, uint64_t nbytes);
   Status SyncInternal(bool use_fsync);
 };
