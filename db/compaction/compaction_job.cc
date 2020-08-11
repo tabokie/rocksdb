@@ -564,6 +564,13 @@ void CompactionJob::GenSubcompactionBoundaries() {
     // Only one range so its size is the total sum of sizes computed above
     sizes_.emplace_back(sum);
   }
+  if (start_lvl == 0) {
+    fprintf(stderr, "event: L0 compaction forms subcompactions of size ");
+    for (auto& size : sizes_) {
+      fprintf(stderr, "%lu, ", size);
+    }
+    fprintf(stderr, "\n");
+  }
 }
 
 Status CompactionJob::Run() {
