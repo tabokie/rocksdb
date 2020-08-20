@@ -465,26 +465,22 @@ Status WritableFileWriter::IncrementalSync() {
   if (bytes_per_sync_ && filesize_ > kBytesNotSyncRange) {
     uint64_t offset_sync_to = filesize_ - kBytesNotSyncRange;
     offset_sync_to -= offset_sync_to % kBytesAlignWhenSync;
-    assert(offset_sync_to >= last_sync_size_);
-    if (offset_sync_to > 0 &&
-        offset_sync_to - last_sync_size_ >= bytes_per_sync_) {
-      uint64_t pos = last_sync_size_;
-      uint64_t allowed = 0;
-      while (offset_sync_to - pos >= bytes_per_sync_) {
-        if (rate_limiter_) {
-          allowed = rate_limiter_->RequestToken(
-              offset_sync_to - pos, 0, writable_file_->GetIOPriority(), stats_,
-              RateLimiter::OpType::kWrite);
-        } else {
-          allowed = offset_sync_to - pos;
-        }
-        s = RangeSync(pos, allowed);
-        if (s.ok()) {
-          last_sync_size_ = pos;
-          pos += allowed;
-        } else {
-          break;
-        }
+    uint64_t pos = last_sync_size_;
+    uint64_t allowed;
+    assert(offset_sync_to >= pos);
+    while (offset_sync_to - pos >= bytes_per_sync_) {
+      if (rate_limiter_ && strict_write_limit_) {
+        allowed = rate_limiter_->RequestToken(
+            offset_sync_to - pos, 0, writable_file_->GetIOPriority(), stats_,
+            RateLimiter::OpType::kWrite);
+      } else {
+        allowed = offset_sync_to - pos;
+      }
+      s = RangeSync(pos, allowed);
+      pos += allowed;
+      last_sync_size_ = pos;
+      if (!s.ok()) {
+        break;
       }
     }
   }
@@ -507,14 +503,13 @@ Status WritableFileWriter::WriteBuffered(const char* data, size_t size) {
 
   while (left > 0) {
     size_t allowed;
-    // if (rate_limiter_ != nullptr) {
-    //   allowed = rate_limiter_->RequestToken(
-    //       left, 0 /* alignment */, writable_file_->GetIOPriority(), stats_,
-    //       RateLimiter::OpType::kWrite);
-    // } else {
-    //   allowed = left;
-    // }
-    allowed = left;
+    if (rate_limiter_ != nullptr && !strict_write_limit_) {
+      allowed = rate_limiter_->RequestToken(
+          left, 0 /* alignment */, writable_file_->GetIOPriority(), stats_,
+          RateLimiter::OpType::kWrite);
+    } else {
+      allowed = left;
+    }
 
     {
       IOSTATS_TIMER_GUARD(write_nanos);
