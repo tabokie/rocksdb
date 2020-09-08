@@ -2153,6 +2153,7 @@ int VersionStorageInfo::MaxOutputLevel(bool allow_ingest_behind) const {
 
 void VersionStorageInfo::EstimateCompactionBytesNeeded(
     const MutableCFOptions& mutable_cf_options) {
+  static constexpr bool pebbles = true;
   // Only implemented for level-based compaction
   if (compaction_style_ != kCompactionStyleLevel) {
     estimated_compaction_needed_bytes_ = 0;
@@ -2176,7 +2177,8 @@ void VersionStorageInfo::EstimateCompactionBytesNeeded(
   }
   // Level 0
   bool level0_compact_triggered = false;
-  if (static_cast<int>(files_[0].size()) >=
+  if (pebbles ||
+      static_cast<int>(files_[0].size()) >=
           mutable_cf_options.level0_file_num_compaction_trigger ||
       level_size >= mutable_cf_options.max_bytes_for_level_base) {
     level0_compact_triggered = true;
