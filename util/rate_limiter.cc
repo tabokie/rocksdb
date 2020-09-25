@@ -287,7 +287,7 @@ int64_t GenericRateLimiter::CalculateRefillBytesPerPeriod(
 Status GenericRateLimiter::Tune() {
   const int kAllowedRangeFactor = 20;
   const int64_t kRatioLower = 15;
-  const int64_t kRatioUpper = 50;
+  const int64_t kRatioUpper = 500;
 
   std::chrono::microseconds prev_tuned_time = tuned_time_;
   tuned_time_ = std::chrono::microseconds(NowMicrosMonotonic(env_));
@@ -303,22 +303,23 @@ Status GenericRateLimiter::Tune() {
   duration_bytes_through_ = 0;
   duration_highpri_bytes_through_ = 0;
   auto util = bytes_sampler_.GetRecentValue() * 100 / prev_bytes_per_sec;
-  if (util >= 98) {
+  if (util > 98) {
     ratio_delta_ += 1;
   } else if (util < 90 && ratio_delta_ > 0) {
     ratio_delta_ -= 1;
   }
-  int32_t ratio = std::max(kRatioLower,
-                           std::min(kRatioUpper,
-                                    bytes_sampler_.GetFullValue() * 10 /
-                                        highpri_bytes_sampler_.GetFullValue()));
+  int32_t ratio = std::max(
+      kRatioLower,
+      std::min(
+          kRatioUpper,
+          bytes_sampler_.GetFullValue() * 10 /
+              std::max(1024 * 1024l, highpri_bytes_sampler_.GetFullValue())));
   int64_t new_bytes_per_sec =
-      (ratio + 5 + ratio_delta_) * highpri_bytes_sampler_.GetRecentValue() / 10;
+      (ratio + 4 + ratio_delta_) * highpri_bytes_sampler_.GetRecentValue() / 10;
   new_bytes_per_sec = std::max(max_bytes_per_sec_ / kAllowedRangeFactor,
                                std::min(new_bytes_per_sec, max_bytes_per_sec_));
-  // fprintf(stderr, "ratio = %d, delta = %d, high = %ld\n", ratio,
-  // ratio_delta_,
-  //         highpri_bytes_sampler_.GetRecentValue() / 1024 / 1024);
+  fprintf(stderr, "ratio = %d, delta = %d, high = %ld\n", ratio, ratio_delta_,
+          highpri_bytes_sampler_.GetRecentValue() / 1024 / 1024);
   if (new_bytes_per_sec != prev_bytes_per_sec) {
     SetBytesPerSecond(new_bytes_per_sec);
   }
