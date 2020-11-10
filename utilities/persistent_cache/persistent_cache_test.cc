@@ -83,7 +83,7 @@ class ConsoleLogger : public Logger {
 
 // construct a tiered RAM+Block cache
 std::unique_ptr<PersistentTieredCache> NewTieredCache(
-    const size_t mem_size, const PersistentCacheConfig& opt) {
+    const size_t mem_size, const PersistentCacheOptions& opt) {
   std::unique_ptr<PersistentTieredCache> tcache(new PersistentTieredCache());
   // create primary tier
   assert(mem_size);
@@ -106,7 +106,7 @@ std::unique_ptr<PersistentCacheTier> NewBlockCache(
     const bool enable_direct_writes = false) {
   const uint32_t max_file_size = static_cast<uint32_t>(12 * 1024 * 1024 * kStressFactor);
   auto log = std::make_shared<ConsoleLogger>();
-  PersistentCacheConfig opt(env, path, max_size, log);
+  PersistentCacheOptions opt(env, path, max_size, log);
   opt.cache_file_size = max_file_size;
   opt.max_write_pipeline_backlog_size = std::numeric_limits<uint64_t>::max();
   opt.enable_direct_writes = enable_direct_writes;
@@ -123,7 +123,7 @@ std::unique_ptr<PersistentTieredCache> NewTieredCache(
         std::numeric_limits<uint64_t>::max()) {
   const uint32_t max_file_size = static_cast<uint32_t>(12 * 1024 * 1024 * kStressFactor);
   auto log = std::make_shared<ConsoleLogger>();
-  auto opt = PersistentCacheConfig(env, path, max_block_cache_size, log);
+  auto opt = PersistentCacheOptions(env, path, max_block_cache_size, log);
   opt.cache_file_size = max_file_size;
   opt.max_write_pipeline_backlog_size = std::numeric_limits<uint64_t>::max();
   // create tier out of the two caches

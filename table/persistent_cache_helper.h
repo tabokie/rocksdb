@@ -20,24 +20,24 @@ struct BlockContents;
 class PersistentCacheHelper {
  public:
   // insert block into raw page cache
-  static void InsertRawPage(const PersistentCacheOptions& cache_options,
+  static void InsertRawPage(const PersistentCacheHolder& cache_options,
                             const BlockHandle& handle, const char* data,
                             const size_t size);
 
   // insert block into uncompressed cache
   static void InsertUncompressedPage(
-      const PersistentCacheOptions& cache_options, const BlockHandle& handle,
+      const PersistentCacheHolder& cache_options, const BlockHandle& handle,
       const BlockContents& contents);
 
   // lookup block from raw page cacge
-  static Status LookupRawPage(const PersistentCacheOptions& cache_options,
+  static Status LookupRawPage(const PersistentCacheHolder& cache_options,
                               const BlockHandle& handle,
                               std::unique_ptr<char[]>* raw_data,
                               const size_t raw_data_size);
 
   // lookup block from uncompressed cache
   static Status LookupUncompressedPage(
-      const PersistentCacheOptions& cache_options, const BlockHandle& handle,
+      const PersistentCacheHolder& cache_options, const BlockHandle& handle,
       BlockContents* contents);
 };
 

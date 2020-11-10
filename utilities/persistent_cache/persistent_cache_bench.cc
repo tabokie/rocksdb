@@ -59,7 +59,7 @@ std::unique_ptr<PersistentCacheTier> NewBlockCache() {
     return nullptr;
   }
 
-  PersistentCacheConfig opt(Env::Default(), FLAGS_path, FLAGS_cache_size, log);
+  PersistentCacheOptions opt(Env::Default(), FLAGS_path, FLAGS_cache_size, log);
   opt.writer_dispatch_size = FLAGS_writer_iosize;
   opt.writer_qdepth = FLAGS_writer_qdepth;
   opt.pipeline_writes = FLAGS_enable_pipelined_writes;
@@ -72,7 +72,7 @@ std::unique_ptr<PersistentCacheTier> NewBlockCache() {
 // create a new cache tier
 // construct a tiered RAM+Block cache
 std::unique_ptr<PersistentTieredCache> NewTieredCache(
-    const size_t mem_size, const PersistentCacheConfig& opt) {
+    const size_t mem_size, const PersistentCacheOptions& opt) {
   std::unique_ptr<PersistentTieredCache> tcache(new PersistentTieredCache());
   // create primary tier
   assert(mem_size);
@@ -96,7 +96,7 @@ std::unique_ptr<PersistentTieredCache> NewTieredCache() {
   }
 
   auto pct = FLAGS_volatile_cache_pct / static_cast<double>(100);
-  PersistentCacheConfig opt(Env::Default(), FLAGS_path,
+  PersistentCacheOptions opt(Env::Default(), FLAGS_path,
                             (1 - pct) * FLAGS_cache_size, log);
   opt.writer_dispatch_size = FLAGS_writer_iosize;
   opt.writer_qdepth = FLAGS_writer_qdepth;

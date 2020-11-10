@@ -42,7 +42,7 @@ namespace rocksdb {
 //
 class BlockCacheTier : public PersistentCacheTier {
  public:
-  explicit BlockCacheTier(const PersistentCacheConfig& opt)
+  explicit BlockCacheTier(const PersistentCacheOptions& opt)
       : opt_(opt),
         insert_ops_(static_cast<size_t>(opt_.max_write_pipeline_backlog_size)),
         buffer_allocator_(opt.write_buffer_size, opt.write_buffer_count()),
@@ -139,7 +139,7 @@ class BlockCacheTier : public PersistentCacheTier {
   };
 
   port::RWMutex lock_;                          // Synchronization
-  const PersistentCacheConfig opt_;             // BlockCache options
+  const PersistentCacheOptions opt_;             // BlockCache options
   BoundedQueue<InsertOp> insert_ops_;           // Ops waiting for insert
   rocksdb::port::Thread insert_th_;                       // Insert thread
   uint32_t writer_cache_id_ = 0;                // Current cache file identifier

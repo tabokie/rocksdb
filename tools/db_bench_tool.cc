@@ -3642,7 +3642,7 @@ class Benchmark {
         }
 
         if (rc_status.ok()) {
-          PersistentCacheConfig rc_cfg(FLAGS_env, FLAGS_read_cache_path,
+          PersistentCacheOptions rc_cfg(FLAGS_env, FLAGS_read_cache_path,
                                        FLAGS_read_cache_size,
                                        read_cache_logger);
 

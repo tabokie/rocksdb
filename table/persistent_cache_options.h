@@ -11,20 +11,20 @@
 
 namespace rocksdb {
 
-// PersistentCacheOptions
+// PersistentCacheHolder
 //
 // This describe the caching behavior for page cache
 // This is used to pass the context for caching and the cache handle
-struct PersistentCacheOptions {
-  PersistentCacheOptions() {}
-  explicit PersistentCacheOptions(
+struct PersistentCacheHolder {
+  PersistentCacheHolder() {}
+  explicit PersistentCacheHolder(
       const std::shared_ptr<PersistentCache>& _persistent_cache,
       const std::string _key_prefix, Statistics* const _statistics)
       : persistent_cache(_persistent_cache),
         key_prefix(_key_prefix),
         statistics(_statistics) {}
 
-  virtual ~PersistentCacheOptions() {}
+  virtual ~PersistentCacheHolder() {}
 
   std::shared_ptr<PersistentCache> persistent_cache;
   std::string key_prefix;

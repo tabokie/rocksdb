@@ -211,7 +211,7 @@ Status ReadProperties(const Slice& handle_value, RandomAccessFileReader* file,
   ReadOptions read_options;
   read_options.verify_checksums = verify_checksum;
   Status s;
-  PersistentCacheOptions cache_options;
+  PersistentCacheHolder cache_options;
 
   BlockFetcher block_fetcher(
       file, prefetch_buffer, footer, read_options, handle, &block_contents,
@@ -371,7 +371,7 @@ Status ReadTableProperties(RandomAccessFileReader* file, uint64_t file_size,
   BlockContents metaindex_contents;
   ReadOptions read_options;
   read_options.verify_checksums = false;
-  PersistentCacheOptions cache_options;
+  PersistentCacheHolder cache_options;
 
   BlockFetcher block_fetcher(
       file, nullptr /* prefetch_buffer */, footer, read_options,
@@ -441,7 +441,7 @@ Status FindMetaBlock(RandomAccessFileReader* file, uint64_t file_size,
   BlockContents metaindex_contents;
   ReadOptions read_options;
   read_options.verify_checksums = false;
-  PersistentCacheOptions cache_options;
+  PersistentCacheHolder cache_options;
   BlockFetcher block_fetcher(
       file, nullptr /* prefetch_buffer */, footer, read_options,
       metaindex_handle, &metaindex_contents, ioptions,
@@ -484,7 +484,7 @@ Status ReadMetaBlock(RandomAccessFileReader* file,
   BlockContents metaindex_contents;
   ReadOptions read_options;
   read_options.verify_checksums = false;
-  PersistentCacheOptions cache_options;
+  PersistentCacheHolder cache_options;
 
   BlockFetcher block_fetcher(
       file, prefetch_buffer, footer, read_options, metaindex_handle,

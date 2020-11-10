@@ -13,7 +13,7 @@
 
 namespace rocksdb {
 
-std::string PersistentCacheConfig::ToString() const {
+std::string PersistentCacheOptions::ToString() const {
   std::string ret;
   ret.reserve(20000);
   const int kBufferSize = 200;

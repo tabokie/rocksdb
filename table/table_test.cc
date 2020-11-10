@@ -3985,7 +3985,7 @@ TEST_P(BlockBasedTableTest, PropertiesBlockRestartPointTest) {
                                 BlockContents* contents) {
       ReadOptions read_options;
       read_options.verify_checksums = false;
-      PersistentCacheOptions cache_options;
+      PersistentCacheHolder cache_options;
 
       BlockFetcher block_fetcher(
           file, nullptr /* prefetch_buffer */, footer, read_options, handle,
@@ -4073,7 +4073,7 @@ TEST_P(BlockBasedTableTest, PropertiesMetaBlockLast) {
   // read metaindex
   auto metaindex_handle = footer.metaindex_handle();
   BlockContents metaindex_contents;
-  PersistentCacheOptions pcache_opts;
+  PersistentCacheHolder pcache_opts;
   BlockFetcher block_fetcher(
       table_reader.get(), nullptr /* prefetch_buffer */, footer, ReadOptions(),
       metaindex_handle, &metaindex_contents, ioptions, false /* decompress */,

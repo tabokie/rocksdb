@@ -42,7 +42,7 @@ class BlockFetcher {
                BlockContents* contents, const ImmutableCFOptions& ioptions,
                bool do_uncompress, bool maybe_compressed, BlockType block_type,
                const UncompressionDict& uncompression_dict,
-               const PersistentCacheOptions& cache_options,
+               const PersistentCacheHolder& cache_options,
                MemoryAllocator* memory_allocator = nullptr,
                MemoryAllocator* memory_allocator_compressed = nullptr,
                bool for_compaction = false)
@@ -79,7 +79,7 @@ class BlockFetcher {
   bool maybe_compressed_;
   BlockType block_type_;
   const UncompressionDict& uncompression_dict_;
-  const PersistentCacheOptions& cache_options_;
+  const PersistentCacheHolder& cache_options_;
   MemoryAllocator* memory_allocator_;
   MemoryAllocator* memory_allocator_compressed_;
   Status status_;

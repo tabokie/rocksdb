@@ -399,7 +399,7 @@ Status NewPersistentCache(Env* const env, const std::string& path,
     return Status::IOError("invalid argument cache");
   }
 
-  auto opt = PersistentCacheConfig(env, path, size, log);
+  auto opt = PersistentCacheOptions(env, path, size, log);
   if (optimized_for_nvm) {
     // the default settings are optimized for SSD
     // NVM devices are better accessed with 4K direct IO and written with

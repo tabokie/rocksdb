@@ -503,7 +503,7 @@ struct BlockBasedTable::Rep {
   size_t persistent_cache_key_prefix_size = 0;
   char compressed_cache_key_prefix[kMaxCacheKeyPrefixSize];
   size_t compressed_cache_key_prefix_size = 0;
-  PersistentCacheOptions persistent_cache_options;
+  PersistentCacheHolder persistent_cache_options;
 
   // Footer contains the fixed table information
   Footer footer;

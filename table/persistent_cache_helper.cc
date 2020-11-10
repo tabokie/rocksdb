@@ -10,7 +10,7 @@
 namespace rocksdb {
 
 void PersistentCacheHelper::InsertRawPage(
-    const PersistentCacheOptions& cache_options, const BlockHandle& handle,
+    const PersistentCacheHolder& cache_options, const BlockHandle& handle,
     const char* data, const size_t size) {
   assert(cache_options.persistent_cache);
   assert(cache_options.persistent_cache->IsCompressed());
@@ -25,7 +25,7 @@ void PersistentCacheHelper::InsertRawPage(
 }
 
 void PersistentCacheHelper::InsertUncompressedPage(
-    const PersistentCacheOptions& cache_options, const BlockHandle& handle,
+    const PersistentCacheHolder& cache_options, const BlockHandle& handle,
     const BlockContents& contents) {
   assert(cache_options.persistent_cache);
   assert(!cache_options.persistent_cache->IsCompressed());
@@ -44,7 +44,7 @@ void PersistentCacheHelper::InsertUncompressedPage(
 }
 
 Status PersistentCacheHelper::LookupRawPage(
-    const PersistentCacheOptions& cache_options, const BlockHandle& handle,
+    const PersistentCacheHolder& cache_options, const BlockHandle& handle,
     std::unique_ptr<char[]>* raw_data, const size_t raw_data_size) {
 #ifdef NDEBUG
   (void)raw_data_size;
@@ -74,7 +74,7 @@ Status PersistentCacheHelper::LookupRawPage(
 }
 
 Status PersistentCacheHelper::LookupUncompressedPage(
-    const PersistentCacheOptions& cache_options, const BlockHandle& handle,
+    const PersistentCacheHolder& cache_options, const BlockHandle& handle,
     BlockContents* contents) {
   assert(cache_options.persistent_cache);
   assert(!cache_options.persistent_cache->IsCompressed());

@@ -133,7 +133,7 @@ Status ReadBlockFromFile(
     std::unique_ptr<TBlocklike>* result, const ImmutableCFOptions& ioptions,
     bool do_uncompress, bool maybe_compressed, BlockType block_type,
     const UncompressionDict& uncompression_dict,
-    const PersistentCacheOptions& cache_options, SequenceNumber global_seqno,
+    const PersistentCacheHolder& cache_options, SequenceNumber global_seqno,
     size_t read_amp_bytes_per_bit, MemoryAllocator* memory_allocator,
     bool for_compaction, bool using_zstd) {
   assert(result);
@@ -665,7 +665,7 @@ class HashIndexReader : public BlockBasedTable::IndexReaderCommon {
     RandomAccessFileReader* const file = rep->file.get();
     const Footer& footer = rep->footer;
     const ImmutableCFOptions& ioptions = rep->ioptions;
-    const PersistentCacheOptions& cache_options = rep->persistent_cache_options;
+    const PersistentCacheHolder& cache_options = rep->persistent_cache_options;
     MemoryAllocator* const memory_allocator =
         GetMemoryAllocator(rep->table_options);
 
@@ -1164,7 +1164,7 @@ Status BlockBasedTable::Open(
 
   // page cache options
   rep->persistent_cache_options =
-      PersistentCacheOptions(rep->table_options.persistent_cache,
+      PersistentCacheHolder(rep->table_options.persistent_cache,
                              std::string(rep->persistent_cache_key_prefix,
                                          rep->persistent_cache_key_prefix_size),
                              rep->ioptions.statistics);
