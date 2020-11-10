@@ -92,6 +92,8 @@ struct PersistentCacheConfig {
     writer_dispatch_size = write_buffer_size = _write_buffer_size;
   }
 
+  PersistentCacheConfig() = default;
+
   //
   // Validate the settings. Our intentions are to catch erroneous settings ahead
   // of time instead going violating invariants or causing dead locks.
@@ -126,17 +128,18 @@ struct PersistentCacheConfig {
   //
   // Env abstraction to use for systmer level operations
   //
-  Env* env;
+  Env* env = Env::Default();
+  ;
 
   //
   // Path for the block cache where blocks are persisted
   //
-  std::string path;
+  std::string path = "";
 
   //
   // Log handle for logging messages
   //
-  std::shared_ptr<Logger> log;
+  std::shared_ptr<Logger> log = nullptr;
 
   //
   // Enable direct IO for reading
@@ -216,10 +219,6 @@ struct PersistentCacheConfig {
   // This option determines if the cache will run in compressed mode or
   // uncompressed mode
   bool is_compressed = true;
-
-  PersistentCacheConfig MakePersistentCacheConfig(
-      const std::string& path, const uint64_t size,
-      const std::shared_ptr<Logger>& log);
 
   std::string ToString() const;
 };
