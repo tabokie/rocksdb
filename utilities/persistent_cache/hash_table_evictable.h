@@ -45,6 +45,8 @@ class EvictableHashTable : private HashTable<T*, Hash, Equal> {
     LRUListType& lru = GetLRUList(h);
     port::RWMutex& lock = GetMutex(h);
 
+    fprintf(stderr, "insert to evictable hash table %ld with lock %ld\n",
+            reinterpret_cast<uint64_t>(t), reinterpret_cast<uint64_t>(&lock));
     WriteLock _(&lock);
     if (hash_table::Insert(&bucket, t)) {
       lru.Push(t);

@@ -82,6 +82,8 @@ class HashTable {
 
     // initialize locks
     locks_.reset(new port::RWMutex[nlocks_]);
+    fprintf(stderr, "hash table initialize lock array %ld\n",
+            reinterpret_cast<uint64_t>(locks_.get()));
 #ifdef OS_LINUX
     mlock(locks_.get(), nlocks_ * sizeof(port::RWMutex));
 #endif
