@@ -30,11 +30,13 @@ class EvictableHashTable : private HashTable<T*, Hash, Equal> {
                               const float load_factor = 2.0,
                               const uint32_t nlocks = 256)
       : HashTable<T*, Hash, Equal>(capacity, load_factor, nlocks),
-        lru_lists_(new LRUList<T>[hash_table::nlocks_]) {
+        lru_lists_(new LRUList<T>[nlocks]) {
     fprintf(stderr,
             "initialize EvictableHashTable with capacity = %lu, load = %f, "
             "nlocks = %u\n",
             capacity, load_factor, nlocks);
+    fprintf(stderr, "check base class members: nlocks = %u, nbucket = %u\n",
+            hash_table::nlocks_, hash_table::nbuckets_);
     assert(lru_lists_);
   }
 
