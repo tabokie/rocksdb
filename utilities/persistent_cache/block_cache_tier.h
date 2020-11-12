@@ -49,6 +49,8 @@ class BlockCacheTier : public PersistentCacheTier {
         writer_(this, opt_.writer_qdepth, static_cast<size_t>(opt_.writer_dispatch_size)) {
     Info(opt_.log, "Initializing allocator. size=%d B count=%" ROCKSDB_PRIszt,
          opt_.write_buffer_size, opt_.write_buffer_count());
+    Status s = Open();
+    Info(opt_.log, "Open BlockCacheTier: %s\n", s.ToString().c_str());
   }
 
   virtual ~BlockCacheTier() {
