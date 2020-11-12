@@ -31,6 +31,10 @@ class EvictableHashTable : private HashTable<T*, Hash, Equal> {
                               const uint32_t nlocks = 256)
       : HashTable<T*, Hash, Equal>(capacity, load_factor, nlocks),
         lru_lists_(new LRUList<T>[hash_table::nlocks_]) {
+    fprintf(stderr,
+            "initialize EvictableHashTable with capacity = %lu, load = %f, "
+            "nlocks = %u\n",
+            capacity, load_factor, nlocks);
     assert(lru_lists_);
   }
 
@@ -45,7 +49,7 @@ class EvictableHashTable : private HashTable<T*, Hash, Equal> {
     LRUListType& lru = GetLRUList(h);
     port::RWMutex& lock = GetMutex(h);
 
-    fprintf(stderr, "insert to evictable hash table %ld with lock %ld\n",
+    fprintf(stderr, "insert to evictable hash table %lu with lock %lu\n",
             reinterpret_cast<uint64_t>(t), reinterpret_cast<uint64_t>(&lock));
     WriteLock _(&lock);
     if (hash_table::Insert(&bucket, t)) {
@@ -159,9 +163,9 @@ class EvictableHashTable : private HashTable<T*, Hash, Equal> {
   port::RWMutex& GetMutex(const uint64_t h) {
     const uint32_t bucket_idx = h % hash_table::nbuckets_;
     const uint32_t lock_idx = bucket_idx % hash_table::nlocks_;
-    fprintf(stderr, "h = %ld, nbuckets_ = %d, bucket_idx = %d, nlock = %d\n", h,
+    fprintf(stderr, "h = %lu, nbuckets_ = %u, bucket_idx = %u, nlock = %u\n", h,
             hash_table::nbuckets_, bucket_idx, hash_table::nlocks_);
-    fprintf(stderr, "GetMutex() lock array %ld with index %d\n",
+    fprintf(stderr, "GetMutex() lock array %lu with index %u\n",
             reinterpret_cast<uint64_t>(hash_table::locks_.get()), lock_idx);
     return hash_table::locks_[lock_idx];
   }

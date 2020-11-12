@@ -69,6 +69,10 @@ class HashTable {
       : nbuckets_(
             static_cast<uint32_t>(load_factor ? capacity / load_factor : 0)),
         nlocks_(nlocks) {
+    fprintf(stderr,
+            "initialize HashTable with capacity = %lu, load_factor = %f, "
+            "nlocks = %u, nbuckets = %u\n",
+            capacity, load_factor, nlocks, nbuckets_);
     // pre-conditions
     assert(capacity);
     assert(load_factor);
@@ -82,7 +86,7 @@ class HashTable {
 
     // initialize locks
     locks_.reset(new port::RWMutex[nlocks_]);
-    fprintf(stderr, "hash table initialize lock array %ld\n",
+    fprintf(stderr, "hash table initialize lock array %lu\n",
             reinterpret_cast<uint64_t>(locks_.get()));
 #ifdef OS_LINUX
     mlock(locks_.get(), nlocks_ * sizeof(port::RWMutex));
@@ -152,9 +156,9 @@ class HashTable {
     const uint64_t h = Hash()(t);
     const uint32_t bucket_idx = h % nbuckets_;
     const uint32_t lock_idx = bucket_idx % nlocks_;
-    fprintf(stderr, "h = %d, nbuckets_ = %d, bucket_idx = %d, nlock = %d\n", h,
+    fprintf(stderr, "h = %u, nbuckets_ = %u, bucket_idx = %u, nlock = %u\n", h,
             nbuckets_, bucket_idx, nlocks_);
-    fprintf(stderr, "GetMutex() lock array %ld with index %d\n",
+    fprintf(stderr, "GetMutex() lock array %lu with index %u\n",
             reinterpret_cast<uint64_t>(&locks_), lock_idx);
 
     return &locks_[lock_idx];

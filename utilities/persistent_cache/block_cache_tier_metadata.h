@@ -49,7 +49,9 @@ class BlockCacheTierMetadata {
  public:
   explicit BlockCacheTierMetadata(const uint32_t blocks_capacity = 1024 * 1024,
                                   const uint32_t cachefile_capacity = 10 * 1024)
-      : cache_file_index_(cachefile_capacity), block_index_(blocks_capacity) {}
+      : cache_file_index_(cachefile_capacity), block_index_(blocks_capacity) {
+    fprintf(stderr, "initialize BlockCacheTierMetadata\n");
+  }
 
   virtual ~BlockCacheTierMetadata() {}
 
