@@ -152,6 +152,10 @@ class HashTable {
     const uint64_t h = Hash()(t);
     const uint32_t bucket_idx = h % nbuckets_;
     const uint32_t lock_idx = bucket_idx % nlocks_;
+    fprintf(stderr, "h = %d, nbuckets_ = %d, bucket_idx = %d, nlock = %d\n", h,
+            nbuckets_, bucket_idx, nlocks_);
+    fprintf(stderr, "GetMutex() lock array %ld with index %d\n",
+            reinterpret_cast<uint64_t>(&locks_), lock_idx);
 
     return &locks_[lock_idx];
   }
