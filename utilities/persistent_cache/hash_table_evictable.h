@@ -13,6 +13,8 @@
 #include <list>
 #include <vector>
 
+#include <memory>
+
 #ifdef OS_LINUX
 #include <sys/mman.h>
 #endif
@@ -41,8 +43,10 @@ class EvictableHashTable {
                               const uint32_t nlocks = 256)
       : nbuckets_(
             static_cast<uint32_t>(load_factor ? capacity / load_factor : 0)),
+        buckets_(nbuckets_),
         nlocks_(nlocks),
-        lru_lists_(new LRUList<T>[nlocks]) {
+        locks_(nlocks),
+        lru_lists_(nlocks) {
     fprintf(stderr,
             "initialize HashTable2 with capacity = %lu, load_factor = %f, "
             "nlocks = %u, nbuckets = %u\n",
@@ -53,29 +57,29 @@ class EvictableHashTable {
     assert(nbuckets_);
     assert(nlocks_);
 
-    buckets_.reset(new Bucket[nbuckets_]);
+// buckets_.reset(new Bucket[nbuckets_]);
 #ifdef OS_LINUX
-    mlock(buckets_.get(), nbuckets_ * sizeof(Bucket));
+    mlock(buckets_.data(), nbuckets_ * sizeof(Bucket));
 #endif
 
     // initialize locks
-    locks_.reset(new port::RWMutex[nlocks_]);
+    // locks_.reset(new port::RWMutex[nlocks_]);
     fprintf(stderr, "hash table initialize lock array %lu\n",
-            reinterpret_cast<uint64_t>(locks_.get()));
+            reinterpret_cast<uint64_t>(locks_.data()));
 #ifdef OS_LINUX
-    mlock(locks_.get(), nlocks_ * sizeof(port::RWMutex));
+    mlock(locks_.data(), nlocks_ * sizeof(port::RWMutex));
 #endif
 
     // post-conditions
-    assert(buckets_);
-    assert(locks_);
+    // assert(buckets_);
+    // assert(locks_);
     fprintf(stderr,
             "initialize EvictableHashTable with capacity = %lu, load = %f, "
             "nlocks = %u\n",
             capacity, load_factor, nlocks);
     fprintf(stderr, "check base class members: nlocks = %u, nbucket = %u\n",
             nlocks_, nbuckets_);
-    assert(lru_lists_);
+    // assert(lru_lists_);
   }
 
   virtual ~EvictableHashTable() {
@@ -207,7 +211,7 @@ class EvictableHashTable {
     fprintf(stderr, "h = %lu, nbuckets_ = %u, bucket_idx = %u, nlock = %u\n", h,
             nbuckets_, bucket_idx, nlocks_);
     fprintf(stderr, "GetMutex() lock array %lu with index %u\n",
-            reinterpret_cast<uint64_t>(locks_.get()), lock_idx);
+            reinterpret_cast<uint64_t>(locks_.data()), lock_idx);
     return locks_[lock_idx];
   }
 
@@ -237,7 +241,7 @@ class EvictableHashTable {
     fprintf(stderr, "h = %u, nbuckets_ = %u, bucket_idx = %u, nlock = %u\n", h,
             nbuckets_, bucket_idx, nlocks_);
     fprintf(stderr, "GetMutex() lock array %lu with index %u\n",
-            reinterpret_cast<uint64_t>(locks_.get()), lock_idx);
+            reinterpret_cast<uint64_t>(locks_.data()), lock_idx);
 
     return &locks_[lock_idx];
   }
@@ -303,12 +307,11 @@ class EvictableHashTable {
   }
 
   const uint32_t nbuckets_;                 // No. of buckets in the spine
-  std::unique_ptr<Bucket[]> buckets_;       // Spine of the hash buckets
+  std::vector<Bucket> buckets_;             // Spine of the hash buckets
   const uint32_t nlocks_;                   // No. of locks
-  std::unique_ptr<port::RWMutex[]> locks_;  // Granular locks
+  std::vector<port::RWMutex> locks_;        // Granular locks
 
-
-  std::unique_ptr<LRUListType[]> lru_lists_;
+  std::vector<LRUListType> lru_lists_;
 };
 
 }  // namespace rocksdb
