@@ -159,7 +159,7 @@ class HashTable {
     fprintf(stderr, "h = %u, nbuckets_ = %u, bucket_idx = %u, nlock = %u\n", h,
             nbuckets_, bucket_idx, nlocks_);
     fprintf(stderr, "GetMutex() lock array %lu with index %u\n",
-            reinterpret_cast<uint64_t>(&locks_), lock_idx);
+            reinterpret_cast<uint64_t>(locks_.get()), lock_idx);
 
     return &locks_[lock_idx];
   }
