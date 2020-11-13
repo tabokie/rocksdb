@@ -32,7 +32,7 @@ namespace rocksdb {
 //
 // Please note EvictableHashTable can only be created for pointer type objects
 template <class T, class Hash, class Equal>
-class EvictableHashTable : private HashTable<T*, Hash, Equal> {
+class EvictableHashTable {
   using PtrT = T*;
 
  public:
