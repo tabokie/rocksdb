@@ -280,14 +280,14 @@ Status WriteAmpBasedRateLimiter::Tune() {
   // computed rate limit will be larger than `kMinBytesPerSec`
   const int64_t kMinBytesPerSec = 10 * 1024 * 1024;
   // high-priority bytes are padded to 20MB
-  const int64_t kHighBytesLower = 20 * 1024 * 1024;
+  const int64_t kHighBytesLower = 10 * 1024 * 1024;
   // lower bound for write amplification estimation
   const int kRatioLower = 12;
   // Two reasons for using a ratio larger than estimation:
   // 1. compaction cannot fully utilize the IO quota we set.
   // 2. make it faster to digest unexpected burst of pending compaction bytes,
   // generally this will help flatten IO waves.
-  const int kRatioPaddingPercent = 18;
+  const int kRatioPaddingPercent = 15;
 
   std::chrono::microseconds prev_tuned_time = tuned_time_;
   tuned_time_ = std::chrono::microseconds(NowMicrosMonotonic(env_));
@@ -319,9 +319,12 @@ Status WriteAmpBasedRateLimiter::Tune() {
                                        kHighBytesLower)));
   int32_t ratio_padding = ratio * kRatioPaddingPercent / 100;
 
-  // in case there are compaction bursts even when online writes are stable
-  auto util = bytes_sampler_.GetRecentValue() * 100 /
-              limit_bytes_sampler_.GetRecentValue();
+  auto limit = std::max(bytes_sampler_.GetRecentValue(),
+                        limit_bytes_sampler_.GetRecentValue());
+  uint64_t util = 50;
+  if (limit > 1) {
+    util = bytes_sampler_.GetRecentValue() * 100 / limit;
+  }
   if (util > 98) {
     ratio_delta_ += 1;
   } else if (util < 95 && ratio_delta_ > 0) {
