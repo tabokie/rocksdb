@@ -59,7 +59,7 @@ class EvictableHashTable {
 
 // buckets_.reset(new Bucket[nbuckets_]);
 #ifdef OS_LINUX
-    mlock(buckets_.data(), nbuckets_ * sizeof(Bucket));
+    // mlock(buckets_.data(), nbuckets_ * sizeof(Bucket));
 #endif
 
     // initialize locks
@@ -67,7 +67,7 @@ class EvictableHashTable {
     fprintf(stderr, "hash table initialize lock array %lu\n",
             reinterpret_cast<uint64_t>(locks_.data()));
 #ifdef OS_LINUX
-    mlock(locks_.data(), nlocks_ * sizeof(port::RWMutex));
+    // mlock(locks_.data(), nlocks_ * sizeof(port::RWMutex));
 #endif
 
     // post-conditions

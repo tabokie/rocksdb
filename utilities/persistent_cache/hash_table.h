@@ -81,7 +81,7 @@ class HashTable {
 
     buckets_.reset(new Bucket[nbuckets_]);
 #ifdef OS_LINUX
-    mlock(buckets_.get(), nbuckets_ * sizeof(Bucket));
+    // mlock(buckets_.get(), nbuckets_ * sizeof(Bucket));
 #endif
 
     // initialize locks
@@ -89,7 +89,7 @@ class HashTable {
     fprintf(stderr, "hash table initialize lock array %lu\n",
             reinterpret_cast<uint64_t>(locks_.get()));
 #ifdef OS_LINUX
-    mlock(locks_.get(), nlocks_ * sizeof(port::RWMutex));
+    // mlock(locks_.get(), nlocks_ * sizeof(port::RWMutex));
 #endif
 
     // post-conditions
