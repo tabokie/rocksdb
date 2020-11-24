@@ -22,6 +22,7 @@ namespace rocksdb {
 // BlockCacheImpl
 //
 Status BlockCacheTier::Open() {
+  metadata_.Check(__LINE__);
   Status status;
 
   WriteLock _(&lock_);
@@ -29,7 +30,9 @@ Status BlockCacheTier::Open() {
   assert(!size_);
 
   // Check the validity of the options
+  metadata_.Check(__LINE__);
   status = opt_.ValidateSettings();
+  metadata_.Check(__LINE__);
   assert(status.ok());
   if (!status.ok()) {
     Error(opt_.log, "Invalid block cache options");
@@ -37,7 +40,9 @@ Status BlockCacheTier::Open() {
   }
 
   // Create base directory or cleanup existing directory
+  metadata_.Check(__LINE__);
   status = opt_.env->CreateDirIfMissing(opt_.path);
+  metadata_.Check(__LINE__);
   if (!status.ok()) {
     Error(opt_.log, "Error creating directory %s. %s", opt_.path.c_str(),
           status.ToString().c_str());
@@ -45,7 +50,9 @@ Status BlockCacheTier::Open() {
   }
 
   // Create base/<cache dir> directory
+  metadata_.Check(__LINE__);
   status = opt_.env->CreateDir(GetCachePath());
+  metadata_.Check(__LINE__);
   if (!status.ok()) {
     // directory already exists, clean it up
     status = CleanupCacheFolder(GetCachePath());
@@ -59,6 +66,7 @@ Status BlockCacheTier::Open() {
 
   // create a new file
   assert(!cache_file_);
+  metadata_.Check(__LINE__);
   status = NewCacheFile();
   if (!status.ok()) {
     Error(opt_.log, "Error creating new file %s. %s", opt_.path.c_str(),
@@ -331,8 +339,10 @@ Status BlockCacheTier::NewCacheFile() {
     new WriteableCacheFile(opt_.env, &buffer_allocator_, &writer_,
                            GetCachePath(), writer_cache_id_,
                            opt_.cache_file_size, opt_.log));
+  metadata_.Check(__LINE__);
 
   bool status = f->Create(opt_.enable_direct_writes, opt_.enable_direct_reads);
+  metadata_.Check(__LINE__);
   if (!status) {
     return Status::IOError("Error creating file");
   }
@@ -341,6 +351,7 @@ Status BlockCacheTier::NewCacheFile() {
 
   writer_cache_id_++;
   cache_file_ = f.release();
+  metadata_.Check(__LINE__);
 
   // insert to cache files tree
   status = metadata_.Insert(cache_file_);

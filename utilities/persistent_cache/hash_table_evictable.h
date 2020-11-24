@@ -82,6 +82,8 @@ class EvictableHashTable {
     // assert(lru_lists_);
   }
 
+  uint32_t nbuckets() const { return nbuckets_; }
+
   virtual ~EvictableHashTable() {
     AssertEmptyLRU();
     AssertEmptyBuckets();

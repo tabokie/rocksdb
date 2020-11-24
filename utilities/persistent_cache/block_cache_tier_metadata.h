@@ -61,6 +61,11 @@ class BlockCacheTierMetadata {
   // Lookup cache file based on cache_id
   BlockCacheFile* Lookup(const uint32_t cache_id);
 
+  void Check(int line) {
+    fprintf(stderr, "line %d: nbuckets = %u, %u\n", line,
+            block_index_.nbuckets(), cache_file_index_.nbuckets());
+  }
+
   // Insert block information to block index
   BlockInfo* Insert(const Slice& key, const LBA& lba);
   // bool Insert(BlockInfo* binfo);

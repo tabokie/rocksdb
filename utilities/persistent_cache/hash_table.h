@@ -97,6 +97,8 @@ class HashTable {
     assert(locks_);
   }
 
+  uint32_t nbuckets() const { return nbuckets_; }
+
   virtual ~HashTable() { AssertEmptyBuckets(); }
 
   //
