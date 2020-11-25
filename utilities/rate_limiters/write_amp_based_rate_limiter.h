@@ -30,7 +30,7 @@ class WriteAmpBasedRateLimiter : public RateLimiter {
   virtual ~WriteAmpBasedRateLimiter();
 
   virtual uint32_t ratio_base() const override { return ratio_base_cache_; }
-  virtual uint32_t ratio_delta() const override { return ratio_delta_; }
+  virtual uint32_t ratio_delta() const override { return ratio_delta_cache_; }
   // This API allows user to dynamically change rate limiter's bytes per second.
   // When auto-tuned is on, this sets rate limit's upper bound instead.
   virtual void SetBytesPerSecond(int64_t bytes_per_second) override;
@@ -157,6 +157,7 @@ class WriteAmpBasedRateLimiter : public RateLimiter {
   uint32_t ratio_delta_;
 
   uint32_t ratio_base_cache_{0};
+  uint32_t ratio_delta_cache_{0};
 };
 
 }  // namespace rocksdb
