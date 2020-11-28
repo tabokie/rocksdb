@@ -1986,7 +1986,7 @@ DBImpl::BGJobLimits DBImpl::GetBGJobLimits(int max_background_flushes,
   }
   if (!parallelize_compactions) {
     // throttle background compactions until we deem necessary
-    res.max_compactions = 1;
+    res.max_compactions = 2;
   }
   return res;
 }
