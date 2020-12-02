@@ -337,12 +337,13 @@ Status WriteAmpBasedRateLimiter::Tune() {
   }
 
   ratio_base_cache_ = ratio + ratio_delta_;
-  ratio_delta_cache_ = bytes_sampler_.GetFullValue();
 
   int64_t new_bytes_per_sec =
       (ratio + ratio_delta_) *
       std::max(highpri_bytes_sampler_.GetRecentValue(), kHighBytesLower) / 10;
-  new_bytes_per_sec += CalculatePadding(new_bytes_per_sec);
+  ratio_delta_cache_ = CalculatePadding(new_bytes_per_sec);
+  new_bytes_per_sec += ratio_delta_cache_;
+  // new_bytes_per_sec += CalculatePadding(new_bytes_per_sec);
   new_bytes_per_sec =
       std::max(kMinBytesPerSec,
                std::min(new_bytes_per_sec,
