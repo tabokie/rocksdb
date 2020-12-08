@@ -38,7 +38,7 @@ constexpr int kMicrosPerTune = 1000 * 1000 * kSecondsPerTune;
 // The calculation is based on the empirical value of 16%, with special
 // care for low-band.
 int64_t CalculatePadding(int64_t base) {
-  return 16 * base / 100 + 192837846837493ll / (base - 236705);
+  return base / 10 + 243216370110562ll / (base + 2182610);
 }
 }  // unnamed namespace
 
