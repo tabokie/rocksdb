@@ -153,7 +153,7 @@ class WriteAmpBasedRateLimiter : public RateLimiter {
       limit_bytes_sampler_;
   bool critical_pace_up_;
   std::atomic<bool> should_pace_up_;
-  uint32_t ratio_delta_;
+  uint32_t percent_delta_;
 
   uint32_t ratio_base_cache_{0};
   uint32_t ratio_delta_cache_{0};
