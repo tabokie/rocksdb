@@ -274,7 +274,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
          disable_memtable);
 
   Status status;
-  if (write_options.low_pri) {
+  if (false && write_options.low_pri) {
     status = ThrottleLowPriWritesIfNeeded(write_options, my_batch);
     if (!status.ok()) {
       return status;
@@ -1545,7 +1545,7 @@ Status DBImpl::DelayWrite(uint64_t num_bytes,
                           const WriteOptions& write_options) {
   uint64_t time_delayed = 0;
   bool delayed = false;
-  {
+  if (false) {
     StopWatch sw(env_, stats_, WRITE_STALL, &time_delayed);
     uint64_t delay = write_controller_.GetDelay(env_, num_bytes);
     if (delay > 0) {
@@ -1606,7 +1606,7 @@ Status DBImpl::DelayWrite(uint64_t num_bytes,
   // writes, we can ignore any background errors and allow the write to
   // proceed
   Status s;
-  if (write_controller_.IsStopped()) {
+  if (false && write_controller_.IsStopped()) {
     // If writes are still stopped, it means we bailed due to a background
     // error
     s = Status::Incomplete(error_handler_.GetBGError().ToString());
