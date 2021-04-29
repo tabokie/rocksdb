@@ -19,13 +19,14 @@ class InspectedSequentialFile : public SequentialFileWrapper {
     size_t offset = 0;
     size_t allowed = 0;
     while (offset < n) {
-      s = inspector_->Read(n - offset, &allowed);
+      s = inspector_->ReadBegin(n - offset, &allowed);
       if (!s.ok()) {
         return s;
       }
       assert(allowed <= n - offset);
       if (allowed > 0) {
         s = SequentialFileWrapper::Read(allowed, result, scratch + offset);
+        inspector_->ReadEnd(allowed);
         if (!s.ok()) {
           break;
         }
@@ -53,7 +54,7 @@ class InspectedSequentialFile : public SequentialFileWrapper {
     size_t roffset = 0;
     size_t allowed = 0;
     while (roffset < n) {
-      s = inspector_->Read(n - roffset, &allowed);
+      s = inspector_->ReadBegin(n - roffset, &allowed);
       if (!s.ok()) {
         return s;
       }
@@ -61,6 +62,7 @@ class InspectedSequentialFile : public SequentialFileWrapper {
       if (allowed > 0) {
         s = SequentialFileWrapper::PositionedRead(offset + roffset, allowed,
                                                   result, scratch + roffset);
+        inspector_->ReadEnd(allowed);
         if (!s.ok()) {
           break;
         }
@@ -99,7 +101,7 @@ class InspectedRandomAccessFile : public RandomAccessFileWrapper {
     size_t roffset = 0;
     size_t allowed = 0;
     while (roffset < n) {
-      s = inspector_->Read(n - roffset, &allowed);
+      s = inspector_->ReadBegin(n - roffset, &allowed);
       if (!s.ok()) {
         return s;
       }
@@ -107,6 +109,7 @@ class InspectedRandomAccessFile : public RandomAccessFileWrapper {
       if (allowed > 0) {
         s = RandomAccessFileWrapper::Read(offset + roffset, allowed, result,
                                           scratch + roffset);
+        inspector_->ReadEnd(allowed);
         if (!s.ok()) {
           break;
         }
@@ -155,13 +158,14 @@ class InspectedWritableFile : public WritableFileWrapper {
     size_t offset = 0;
     size_t allowed = 0;
     while (offset < size) {
-      s = inspector_->Write(size - offset, &allowed);
+      s = inspector_->WriteBegin(size - offset, &allowed);
       if (!s.ok()) {
         return s;
       }
       assert(allowed <= size - offset);
       if (allowed > 0) {
         s = WritableFileWrapper::Append(Slice(data.data() + offset, allowed));
+        inspector_->WriteEnd(allowed);
         if (!s.ok()) {
           break;
         }
@@ -178,7 +182,7 @@ class InspectedWritableFile : public WritableFileWrapper {
     size_t roffset = 0;
     size_t allowed = 0;
     while (roffset < size) {
-      s = inspector_->Write(size - roffset, &allowed);
+      s = inspector_->WriteBegin(size - roffset, &allowed);
       if (!s.ok()) {
         return s;
       }
@@ -186,6 +190,7 @@ class InspectedWritableFile : public WritableFileWrapper {
       if (allowed > 0) {
         s = WritableFileWrapper::PositionedAppend(
             Slice(data.data() + roffset, allowed), offset + roffset);
+        inspector_->WriteEnd(allowed);
         if (!s.ok()) {
           break;
         }
@@ -215,7 +220,7 @@ class InspectedRandomRWFile : public RandomRWFileWrapper {
     size_t roffset = 0;
     size_t allowed = 0;
     while (roffset < size) {
-      s = inspector_->Write(size - roffset, &allowed);
+      s = inspector_->WriteBegin(size - roffset, &allowed);
       if (!s.ok()) {
         return s;
       }
@@ -223,6 +228,7 @@ class InspectedRandomRWFile : public RandomRWFileWrapper {
       if (allowed > 0) {
         s = RandomRWFileWrapper::Write(offset + roffset,
                                        Slice(data.data() + roffset, allowed));
+        inspector_->WriteEnd(allowed);
         if (!s.ok()) {
           break;
         }
@@ -239,7 +245,7 @@ class InspectedRandomRWFile : public RandomRWFileWrapper {
     size_t roffset = 0;
     size_t allowed = 0;
     while (roffset < n) {
-      s = inspector_->Read(n - roffset, &allowed);
+      s = inspector_->ReadBegin(n - roffset, &allowed);
       if (!s.ok()) {
         return s;
       }
@@ -247,6 +253,7 @@ class InspectedRandomRWFile : public RandomRWFileWrapper {
       if (allowed > 0) {
         s = RandomRWFileWrapper::Read(offset + roffset, allowed, result,
                                       scratch + roffset);
+        inspector_->ReadEnd(allowed);
         if (!s.ok()) {
           return s;
         }

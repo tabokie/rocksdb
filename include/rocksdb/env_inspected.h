@@ -16,8 +16,10 @@ class FileSystemInspector {
  public:
   virtual ~FileSystemInspector() = default;
 
-  virtual Status Read(size_t len, size_t* allowed) = 0;
-  virtual Status Write(size_t len, size_t* allowed) = 0;
+  virtual Status ReadBegin(size_t len, size_t* allowed) = 0;
+  virtual void ReadEnd(size_t len) = 0;
+  virtual Status WriteBegin(size_t len, size_t* allowed) = 0;
+  virtual void WriteEnd(size_t len) = 0;
 };
 
 // An Env with underlying IO requests being inspected. It holds a reference to

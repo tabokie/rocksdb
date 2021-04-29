@@ -101,7 +101,7 @@ class DummyFileSystemInspector : public FileSystemInspector {
   DummyFileSystemInspector(size_t refill_bytes = 0)
       : refill_bytes_(refill_bytes) {}
 
-  Status Read(size_t len, size_t* allowed) override {
+  Status ReadBegin(size_t len, size_t* allowed) override {
     assert(allowed);
     if (refill_bytes_ == 0) {
       *allowed = len;
@@ -111,7 +111,9 @@ class DummyFileSystemInspector : public FileSystemInspector {
     return Status::OK();
   }
 
-  Status Write(size_t len, size_t* allowed) override {
+  void ReadEnd(size_t len) override {}
+
+  Status WriteBegin(size_t len, size_t* allowed) override {
     assert(allowed);
     if (refill_bytes_ == 0) {
       *allowed = len;
@@ -120,6 +122,8 @@ class DummyFileSystemInspector : public FileSystemInspector {
     }
     return Status::OK();
   }
+
+  void WriteEnd(size_t len) override {}
 
  private:
   size_t refill_bytes_;
