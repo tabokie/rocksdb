@@ -171,10 +171,16 @@ ColumnFamilyOptions BuildColumnFamilyOptions(
       mutable_cf_options.hard_pending_compaction_bytes_limit;
   cf_opts.level0_file_num_compaction_trigger =
       mutable_cf_options.level0_file_num_compaction_trigger;
+  cf_opts.level0_bytes_compaction_trigger =
+      mutable_cf_options.level0_bytes_compaction_trigger;
   cf_opts.level0_slowdown_writes_trigger =
       mutable_cf_options.level0_slowdown_writes_trigger;
+  cf_opts.level0_bytes_slowdown_writes_trigger =
+      mutable_cf_options.level0_bytes_slowdown_writes_trigger;
   cf_opts.level0_stop_writes_trigger =
       mutable_cf_options.level0_stop_writes_trigger;
+  cf_opts.level0_bytes_stop_writes_trigger =
+      mutable_cf_options.level0_bytes_stop_writes_trigger;
   cf_opts.max_compaction_bytes = mutable_cf_options.max_compaction_bytes;
   cf_opts.target_file_size_base = mutable_cf_options.target_file_size_base;
   cf_opts.target_file_size_multiplier =

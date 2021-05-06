@@ -1790,8 +1790,8 @@ Status DBImpl::WaitUntilFlushWouldNotStallWrites(ColumnFamilyData* cfd,
       // that case we shouldn't wait since background work won't be scheduled.
       if (cfd->imm()->NumNotFlushed() <
               cfd->ioptions()->min_write_buffer_number_to_merge &&
-          vstorage->l0_delay_trigger_count() <
-              mutable_cf_options.level0_file_num_compaction_trigger) {
+          vstorage->l0_delay_trigger_bytes() <
+              mutable_cf_options.level0_bytes_compaction_trigger) {
         break;
       }
 
@@ -1801,7 +1801,8 @@ Status DBImpl::WaitUntilFlushWouldNotStallWrites(ColumnFamilyData* cfd,
       write_stall_condition =
           ColumnFamilyData::GetWriteStallConditionAndCause(
               cfd->imm()->NumNotFlushed() + 1,
-              vstorage->l0_delay_trigger_count() + 1,
+              vstorage->l0_delay_trigger_bytes() +
+                  mutable_cf_options.target_file_size_base,
               vstorage->estimated_compaction_needed_bytes(), mutable_cf_options)
               .first;
     } while (write_stall_condition != WriteStallCondition::kNormal);

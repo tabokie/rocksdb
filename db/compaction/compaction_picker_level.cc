@@ -532,9 +532,12 @@ bool LevelCompactionBuilder::PickIntraL0Compaction() {
   start_level_inputs_.clear();
   const std::vector<FileMetaData*>& level_files =
       vstorage_->LevelFiles(0 /* level */);
-  if (level_files.size() <
-          static_cast<size_t>(
-              mutable_cf_options_.level0_file_num_compaction_trigger + 2) ||
+  uint64_t level_size = 0;
+  for (const auto* f : level_files) {
+    level_size += f->fd.GetFileSize();
+  }
+  if (level_size < mutable_cf_options_.level0_bytes_compaction_trigger +
+                       2 * mutable_cf_options_.target_file_size_base ||
       level_files[0]->being_compacted) {
     // If L0 isn't accumulating much files beyond the regular trigger, don't
     // resort to L0->L0 compaction yet.

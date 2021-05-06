@@ -1590,7 +1590,7 @@ VersionStorageInfo::VersionStorageInfo(
       next_file_to_compact_by_size_(num_levels_),
       compaction_score_(num_levels_),
       compaction_level_(num_levels_),
-      l0_delay_trigger_count_(0),
+      l0_delay_trigger_bytes_(0),
       accumulated_file_size_(0),
       accumulated_raw_key_size_(0),
       accumulated_raw_value_size_(0),
@@ -2172,14 +2172,12 @@ void VersionStorageInfo::EstimateCompactionBytesNeeded(
 
   uint64_t bytes_compact_to_next_level = 0;
   uint64_t level_size = 0;
-  for (auto* f : files_[0]) {
+  for (const auto* f : files_[0]) {
     level_size += f->fd.GetFileSize();
   }
   // Level 0
   bool level0_compact_triggered = false;
-  if (static_cast<int>(files_[0].size()) >=
-          mutable_cf_options.level0_file_num_compaction_trigger ||
-      level_size >= mutable_cf_options.max_bytes_for_level_base) {
+  if (level_size >= mutable_cf_options.level0_bytes_compaction_trigger) {
     level0_compact_triggered = true;
     estimated_compaction_needed_bytes_ = level_size;
     bytes_compact_to_next_level = level_size;
@@ -2316,16 +2314,8 @@ void VersionStorageInfo::ComputeCompactionScore(
         }
 
       } else {
-        score = static_cast<double>(num_sorted_runs) /
-                mutable_cf_options.level0_file_num_compaction_trigger;
-        if (compaction_style_ == kCompactionStyleLevel && num_levels() > 1) {
-          // Level-based involves L0->L0 compactions that can lead to oversized
-          // L0 files. Take into account size as well to avoid later giant
-          // compactions to the base level.
-          score = std::max(
-              score, static_cast<double>(total_size) /
-                     mutable_cf_options.max_bytes_for_level_base);
-        }
+        score = static_cast<double>(total_size) /
+                mutable_cf_options.level0_bytes_compaction_trigger;
       }
     } else {
       // Compute the ratio of current size to size limit.
@@ -3098,7 +3088,7 @@ void VersionStorageInfo::CalculateBaseBytes(const ImmutableCFOptions& ioptions,
   for (const auto& f : files_[0]) {
     l0_size += f->fd.GetFileSize();
   }
-  set_l0_delay_trigger_count(static_cast<int>(l0_size));
+  set_l0_delay_trigger_bytes(l0_size);
 
   level_max_bytes_.resize(ioptions.num_levels);
   if (!ioptions.level_compaction_dynamic_level_bytes) {
@@ -3192,8 +3182,7 @@ void VersionStorageInfo::CalculateBaseBytes(const ImmutableCFOptions& ioptions,
       assert(base_level_size > 0);
       if (l0_size > base_level_size &&
           (l0_size > options.max_bytes_for_level_base ||
-           static_cast<int>(files_[0].size() / 2) >=
-               options.level0_file_num_compaction_trigger)) {
+           l0_size / 2 >= options.level0_bytes_compaction_trigger)) {
         // We adjust the base level according to actual L0 size, and adjust
         // the level multiplier accordingly, when:
         //   1. the L0 size is larger than level size base, or

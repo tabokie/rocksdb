@@ -248,6 +248,7 @@ UniversalCompactionPicker::CalculateSortedRuns(
   return ret;
 }
 
+// TODO(tabokie)
 // Universal style of compaction. Pick files that are contiguous in
 // time-range to compact.
 Compaction* UniversalCompactionPicker::PickCompaction(

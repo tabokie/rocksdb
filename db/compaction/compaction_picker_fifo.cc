@@ -102,6 +102,7 @@ Compaction* FIFOCompactionPicker::PickTTLCompaction(
   return c;
 }
 
+// TODO(tabokie)
 Compaction* FIFOCompactionPicker::PickSizeCompaction(
     const std::string& cf_name, const MutableCFOptions& mutable_cf_options,
     VersionStorageInfo* vstorage, LogBuffer* log_buffer) {
