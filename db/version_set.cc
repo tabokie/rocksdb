@@ -3094,18 +3094,11 @@ void VersionStorageInfo::CalculateBaseBytes(const ImmutableCFOptions& ioptions,
                                             const MutableCFOptions& options) {
   // Special logic to set number of sorted runs.
   // It is to match the previous behavior when all files are in L0.
-  int num_l0_count = static_cast<int>(files_[0].size());
-  if (compaction_style_ == kCompactionStyleUniversal) {
-    // For universal compaction, we use level0 score to indicate
-    // compaction score for the whole DB. Adding other levels as if
-    // they are L0 files.
-    for (int i = 1; i < num_levels(); i++) {
-      if (!files_[i].empty()) {
-        num_l0_count++;
-      }
-    }
+  uint64_t l0_size = 0;
+  for (const auto& f : files_[0]) {
+    l0_size += f->fd.GetFileSize();
   }
-  set_l0_delay_trigger_count(num_l0_count);
+  set_l0_delay_trigger_count(static_cast<int>(l0_size));
 
   level_max_bytes_.resize(ioptions.num_levels);
   if (!ioptions.level_compaction_dynamic_level_bytes) {
@@ -3154,11 +3147,6 @@ void VersionStorageInfo::CalculateBaseBytes(const ImmutableCFOptions& ioptions,
       // No compaction from L1+ needs to be scheduled.
       base_level_ = num_levels_ - 1;
     } else {
-      uint64_t l0_size = 0;
-      for (const auto& f : files_[0]) {
-        l0_size += f->fd.GetFileSize();
-      }
-
       uint64_t base_bytes_max =
           std::max(options.max_bytes_for_level_base, l0_size);
       uint64_t base_bytes_min = static_cast<uint64_t>(
