@@ -491,24 +491,32 @@ Status ExternalSstFileIngestionJob::AssignLevelAndSeqnoForIngestedFile(
   int target_level = 0;
   auto* vstorage = cfd_->current()->storage_info();
 
+  // Find the highest level where ingested file:
+  // 1) Does not overlap with lower level files
+  // 2) Can fit in this level
   for (int lvl = 0; lvl < cfd_->NumberLevels(); lvl++) {
     if (lvl > 0 && lvl < vstorage->base_level()) {
       continue;
     }
 
     if (vstorage->NumLevelFiles(lvl) > 0) {
-      bool overlap_with_level = false;
       status = sv->current->OverlapWithLevelIterator(ro, env_options_,
           file_to_ingest->smallest_user_key, file_to_ingest->largest_user_key,
-          lvl, &overlap_with_level);
+          lvl, &overlap_with_db);
       if (!status.ok()) {
         return status;
       }
-      if (overlap_with_level) {
+      if (overlap_with_db) {
         // We must use L0 or any level higher than `lvl` to be able to overwrite
         // the keys that we overlap with in this level, We also need to assign
         // this file a seqno to overwrite the existing keys in level `lvl`
-        overlap_with_db = true;
+        if (lvl == 0) {
+          ROCKS_LOG_WARN(db_options_.info_log, "Ingest to %d, overlap with L0", target_level);
+        } else if (lvl == vstorage->base_level() || target_level == lvl - 1) {
+          ROCKS_LOG_WARN(db_options_.info_log, "Ingest to %d, overlap with level %d", target_level, lvl);
+        } else {
+          ROCKS_LOG_WARN(db_options_.info_log, "Ingest to %d, does not fix in upper level", target_level);
+        }
         break;
       }
 
