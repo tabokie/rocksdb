@@ -71,33 +71,33 @@ int FindFileInRange(const InternalKeyComparator& icmp,
                                            b + right, key, cmp) - b);
 }
 
-Status OverlapWithIterator(const Comparator* ucmp,
-    const Slice& smallest_user_key,
-    const Slice& largest_user_key,
-    InternalIterator* iter,
-    bool* overlap) {
-  InternalKey range_start(smallest_user_key, kMaxSequenceNumber,
-                          kValueTypeForSeek);
-  iter->Seek(range_start.Encode());
-  if (!iter->status().ok()) {
-    return iter->status();
-  }
+// Status OverlapWithIterator(const Comparator* ucmp,
+//     const Slice& smallest_user_key,
+//     const Slice& largest_user_key,
+//     InternalIterator* iter,
+//     bool* overlap) {
+//   InternalKey range_start(smallest_user_key, kMaxSequenceNumber,
+//                           kValueTypeForSeek);
+//   iter->Seek(range_start.Encode());
+//   if (!iter->status().ok()) {
+//     return iter->status();
+//   }
 
-  *overlap = false;
-  if (iter->Valid()) {
-    ParsedInternalKey seek_result;
-    if (!ParseInternalKey(iter->key(), &seek_result)) {
-      return Status::Corruption("DB have corrupted keys");
-    }
+//   *overlap = false;
+//   if (iter->Valid()) {
+//     ParsedInternalKey seek_result;
+//     if (!ParseInternalKey(iter->key(), &seek_result)) {
+//       return Status::Corruption("DB have corrupted keys");
+//     }
 
-    if (ucmp->CompareWithoutTimestamp(seek_result.user_key, largest_user_key) <=
-        0) {
-      *overlap = true;
-    }
-  }
+//     if (ucmp->CompareWithoutTimestamp(seek_result.user_key, largest_user_key) <=
+//         0) {
+//       *overlap = true;
+//     }
+//   }
 
-  return iter->status();
-}
+//   return iter->status();
+// }
 
 Status OverlapWithIterator2(const Comparator* ucmp,
                              const Slice& smallest_user_key,
