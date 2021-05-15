@@ -99,6 +99,38 @@ Status OverlapWithIterator(const Comparator* ucmp,
   return iter->status();
 }
 
+Status OverlapWithIterator2(const Comparator* ucmp,
+                             const Slice& smallest_user_key,
+                             const Slice& largest_user_key,
+                             InternalIterator* iter, bool* overlap,
+                             Logger* info_log) {
+  InternalKey range_start(smallest_user_key, kMaxSequenceNumber,
+                          kValueTypeForSeek);
+  iter->Seek(range_start.Encode());
+  if (!iter->status().ok()) {
+    return iter->status();
+  }
+
+  *overlap = false;
+  if (iter->Valid()) {
+    ParsedInternalKey seek_result;
+    if (!ParseInternalKey(iter->key(), &seek_result)) {
+      return Status::Corruption("DB have corrupted keys");
+    }
+
+    if (ucmp->CompareWithoutTimestamp(seek_result.user_key, largest_user_key) <=
+        0) {
+      ROCKS_LOG_WARN(info_log, "Overlap: %s(%d) in [%s, %s]",
+                     seek_result.user_key.ToString(true).c_str(), seek_result.type,
+                     smallest_user_key.ToString(true).c_str(),
+                     largest_user_key.ToString(true).c_str());
+      *overlap = true;
+    }
+  }
+
+  return iter->status();
+}
+
 // Class to help choose the next file to search for the particular key.
 // Searches and returns files level by level.
 // We can search level-by-level since entries never hop across
@@ -1544,8 +1576,8 @@ Status Version::OverlapWithLevelIterator(const ReadOptions& read_options,
           /*skip_filters=*/false, /*level=*/0,
           /*smallest_compaction_key=*/nullptr,
           /*largest_compaction_key=*/nullptr));
-      status = OverlapWithIterator(
-          ucmp, smallest_user_key, largest_user_key, iter.get(), overlap);
+      status = OverlapWithIterator2(ucmp, smallest_user_key, largest_user_key,
+                                     iter.get(), overlap, info_log_);
       if (!status.ok() || *overlap) {
         break;
       }
@@ -1559,12 +1591,13 @@ Status Version::OverlapWithLevelIterator(const ReadOptions& read_options,
         cfd_->internal_stats()->GetFileReadHist(level),
         TableReaderCaller::kUserIterator, IsFilterSkipped(level), level,
         &range_del_agg));
-    status = OverlapWithIterator(
-        ucmp, smallest_user_key, largest_user_key, iter.get(), overlap);
+    status = OverlapWithIterator2(
+        ucmp, smallest_user_key, largest_user_key, iter.get(), overlap, info_log_);
   }
 
   if (status.ok() && *overlap == false &&
       range_del_agg.IsRangeOverlapped(smallest_user_key, largest_user_key)) {
+    ROCKS_LOG_WARN(info_log_, "Overlap with range del");
     *overlap = true;
   }
   return status;
