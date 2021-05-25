@@ -103,6 +103,26 @@ class WriteController {
   uint64_t delayed_write_rate_;
 
   std::unique_ptr<RateLimiter> low_pri_rate_limiter_;
+
+  template <size_t kWindowSize>
+  class WindowSmoother {
+    public:
+    WindowSmoother() {
+      memset(data_, 0, sizeof(uint64_t) * kWindowSize);
+    }
+    void AddSample(uint64_t v) {
+      cursor_ = (cursor_ + 1) % kWindowSize;
+      full_sum_ += v - data_[cursor_];
+      data_[cursor_] = v;
+    }
+    uint64_t GetFullValue() { return full_sum_ / kWindowSize; }
+
+    private:
+    uint32_t cursor_{0};  // point to the most recent sample
+    uint64_t data_[kWindowSize];
+    uint64_t full_sum_{0};
+  };
+  WindowSmoother<10> history_wait_;
 };
 
 class WriteControllerToken {

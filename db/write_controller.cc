@@ -37,11 +37,13 @@ WriteController::GetCompactionPressureToken() {
 bool WriteController::IsStopped() const {
   return total_stopped_.load(std::memory_order_relaxed) > 0;
 }
+
 // This is inside DB mutex, so we can't sleep and need to minimize
 // frequency to get time.
 // If it turns out to be a performance issue, we can redesign the thread
 // synchronization model here.
 // The function trust caller will sleep micros returned.
+// TODO(tabokie): queue it
 uint64_t WriteController::GetDelay(Env* env, uint64_t num_bytes) {
   if (total_stopped_.load(std::memory_order_relaxed) > 0) {
     return 0;
@@ -55,7 +57,9 @@ uint64_t WriteController::GetDelay(Env* env, uint64_t num_bytes) {
 
   if (bytes_left_ >= num_bytes) {
     bytes_left_ -= num_bytes;
-    return 0;
+    auto wait = history_wait_.GetFullValue();
+    history_wait_.AddSample(wait);
+    return wait;
   }
   // The frequency to get time inside DB mutex is less than one per refill
   // interval.
@@ -77,7 +81,9 @@ uint64_t WriteController::GetDelay(Env* env, uint64_t num_bytes) {
         // return without extra sleeping.
         last_refill_time_ = time_now;
         bytes_left_ -= num_bytes;
-        return 0;
+        auto wait = history_wait_.GetFullValue();
+        history_wait_.AddSample(wait);
+        return wait;
       }
     }
   }
@@ -90,7 +96,9 @@ uint64_t WriteController::GetDelay(Env* env, uint64_t num_bytes) {
     // time.
     bytes_left_ = bytes_left_ + single_refill_amount - num_bytes;
     last_refill_time_ = time_now + kRefillInterval;
-    return kRefillInterval + sleep_debt;
+    auto wait = kRefillInterval + sleep_debt;
+    history_wait_.AddSample(wait);
+    return wait;
   }
 
   // Need to refill more than one interval. Need to sleep longer. Check
@@ -103,6 +111,7 @@ uint64_t WriteController::GetDelay(Env* env, uint64_t num_bytes) {
                             kMicrosPerSecond) +
       sleep_debt;
   last_refill_time_ = time_now + sleep_amount;
+  history_wait_.AddSample(sleep_amount);
   return sleep_amount;
 }
 

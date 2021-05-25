@@ -142,7 +142,6 @@ class WriteAmpBasedRateLimiter : public RateLimiter {
     }
     int64_t GetFullValue() { return full_sum_ / kWindowSize; }
     int64_t GetRecentValue() { return recent_sum_ / kRecentWindowSize; }
-    bool AtTimePoint() const { return cursor_ == 0; }
 
    private:
     uint32_t cursor_{0};  // point to the most recent sample
