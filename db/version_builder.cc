@@ -78,7 +78,8 @@ class VersionBuilder::Rep {
   };
 
   struct LevelState {
-    std::unordered_set<uint64_t> deleted_files;
+    // Files in base version that should be deleted.
+    std::unordered_set<uint64_t> deleted_base_files;
     // Map from file number to file meta data.
     std::unordered_map<uint64_t, FileMetaData*> added_files;
   };
@@ -130,8 +131,7 @@ class VersionBuilder::Rep {
   }
 
   void UnrefFile(FileMetaData* f) {
-    f->refs--;
-    if (f->refs <= 0) {
+    if (f->Unref()) {
       if (f->table_reader_handle) {
         assert(table_cache_ != nullptr);
         table_cache_->ReleaseHandle(f->table_reader_handle);
@@ -296,7 +296,7 @@ class VersionBuilder::Rep {
       add_files.erase(add_it);
     }
 
-    auto& del_files = level_state.deleted_files;
+    auto& del_files = level_state.deleted_base_files;
     assert(del_files.find(file_number) == del_files.end());
     del_files.emplace(file_number);
 
@@ -332,16 +332,35 @@ class VersionBuilder::Rep {
       return Status::OK();
     }
 
-    auto& level_state = levels_[level];
-
-    auto& del_files = level_state.deleted_files;
-    auto del_it = del_files.find(file_number);
-    if (del_it != del_files.end()) {
-      del_files.erase(del_it);
+    FileMetaData* f = nullptr;
+    // FIXME: It's possible that an older version has a bigger `max_file_number`
+    // than current version.
+    if (file_number <= base_vstorage_->max_file_number()) {
+      auto* base_meta = base_vstorage_->GetFileMetaDataByNumber(file_number);
+      if (!base_meta) {
+        std::ostringstream oss;
+        oss << "Cannot add table file #" << file_number << " to level " << level
+            << " since it has a small file number which is potentially "
+            << "referenced by older versions";
+        return Status::Corruption("VersionBuilder", oss.str());
+      }
+      // This should be a file trivially moved to a new position. Make sure the
+      // two are the same physical file.
+      if (base_meta->fd.GetPathId() != meta.fd.GetPathId()) {
+        std::ostringstream oss;
+        oss << "Cannot add table file #" << file_number << " to level " << level
+            << " by trivial move since it isn't trivial to move to a "
+            << "different path";
+        return Status::Corruption("VersionBuilder", oss.str());
+      }
+      // One physical file should be reference counted in one FileMetaData.
+      f = base_meta;
+    } else {
+      f = new FileMetaData(meta);
     }
+    f->Ref();
 
-    FileMetaData* const f = new FileMetaData(meta);
-    f->refs = 1;
+    auto& level_state = levels_[level];
 
     auto& add_files = level_state.added_files;
     assert(add_files.find(file_number) == add_files.end());
@@ -431,11 +450,12 @@ class VersionBuilder::Rep {
       auto added_iter = added_files.begin();
       auto added_end = added_files.end();
       while (added_iter != added_end || base_iter != base_end) {
-        if (base_iter == base_end ||
-                (added_iter != added_end && cmp(*added_iter, *base_iter))) {
-          MaybeAddFile(vstorage, level, *added_iter++);
+        // `added_iter` is prioritized
+        if (added_iter == added_end ||
+            (base_iter != base_end && cmp(*base_iter, *added_iter))) {
+          MaybeAddFile(vstorage, level, *base_iter++, true /*from_base*/);
         } else {
-          MaybeAddFile(vstorage, level, *base_iter++);
+          MaybeAddFile(vstorage, level, *added_iter++, false /*from_base*/);
         }
       }
     }
@@ -541,15 +561,15 @@ class VersionBuilder::Rep {
     return Status::OK();
   }
 
-  void MaybeAddFile(VersionStorageInfo* vstorage, int level, FileMetaData* f) {
+  void MaybeAddFile(VersionStorageInfo* vstorage, int level, FileMetaData* f,
+                    bool from_base) {
     const uint64_t file_number = f->fd.GetNumber();
 
     const auto& level_state = levels_[level];
 
-    const auto& del_files = level_state.deleted_files;
-    const auto del_it = del_files.find(file_number);
+    const auto& del_files = level_state.deleted_base_files;
 
-    if (del_it != del_files.end()) {
+    if (from_base && del_files.find(file_number) != del_files.end()) {
       // f is to-be-deleted table file
       vstorage->RemoveCurrentStats(f);
     } else {
@@ -561,7 +581,7 @@ class VersionBuilder::Rep {
       if (add_it != add_files.end() && add_it->second != f) {
         vstorage->RemoveCurrentStats(f);
       } else {
-        vstorage->AddFile(level, f, info_log_);
+        vstorage->AddFile(level, f);
       }
     }
   }
@@ -597,10 +617,4 @@ Status VersionBuilder::LoadTableHandlers(
                                  prefetch_index_and_filter_in_cache,
                                  is_initial_load, prefix_extractor);
 }
-
-void VersionBuilder::MaybeAddFile(VersionStorageInfo* vstorage, int level,
-                                  FileMetaData* f) {
-  rep_->MaybeAddFile(vstorage, level, f);
-}
-
 }  // namespace rocksdb

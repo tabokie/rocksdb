@@ -106,7 +106,7 @@ class VersionStorageInfo {
 
   void Reserve(int level, size_t size) { files_[level].reserve(size); }
 
-  void AddFile(int level, FileMetaData* f, Logger* info_log = nullptr);
+  void AddFile(int level, FileMetaData* f);
 
   void SetFinalized();
 
@@ -309,6 +309,17 @@ class VersionStorageInfo {
     return it->second;
   }
 
+  // REQUIRES: This version has been saved (see VersionSet::SaveTo)
+  FileMetaData* GetFileMetaDataByNumber(uint64_t file_number) const {
+    auto location = GetFileLocation(file_number);
+
+    if (!location.IsValid()) {
+      return nullptr;
+    }
+
+    return files_[location.GetLevel()][location.GetPosition()];
+  }
+
   const rocksdb::LevelFilesBrief& LevelFilesBrief(int level) const {
     assert(level < static_cast<int>(level_files_brief_.size()));
     return level_files_brief_[level];
@@ -353,6 +364,8 @@ class VersionStorageInfo {
 
   int base_level() const { return base_level_; }
   double level_multiplier() const { return level_multiplier_; }
+
+  uint64_t max_file_number() const { return max_file_number_; }
 
   // REQUIRES: lock is held
   // Set the index that is used to offset into files_by_compaction_pri_ to find
@@ -483,6 +496,8 @@ class VersionStorageInfo {
   // level).
   using FileLocations = std::unordered_map<uint64_t, FileLocation>;
   FileLocations file_locations_;
+
+  uint64_t max_file_number_;
 
   // Level that L0 data should be compacted to. All levels < base_level_ should
   // be empty. -1 if it is not level-compaction so it's not applicable.
@@ -646,7 +661,7 @@ class Version {
   bool Unref();
 
   // Add all files listed in the current version to *live.
-  void AddLiveFiles(std::vector<FileDescriptor>* live);
+  void AddLiveFiles(std::vector<uint64_t>* live) const;
 
   // Return a human readable string that describes this version's contents.
   std::string DebugString(bool hex = false, bool print_stats = false) const;
@@ -1030,7 +1045,7 @@ class VersionSet {
       const EnvOptions& env_options_compactions);
 
   // Add all files listed in any live version to *live.
-  void AddLiveFiles(std::vector<FileDescriptor>* live_list);
+  void AddLiveFiles(std::vector<uint64_t>* live_list) const;
 
   // Return the approximate size of data to be scanned for range [start, end)
   // in levels [start_level, end_level). If end_level == -1 it will search
