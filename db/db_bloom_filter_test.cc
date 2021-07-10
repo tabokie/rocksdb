@@ -1355,7 +1355,7 @@ TEST_F(DBBloomFilterTest, DynamicBloomFilterUpperBound) {
       Slice upper_bound("abce");
       ReadOptions read_options;
       read_options.prefix_same_as_start = true;
-      read_options.iterate_upper_bound = &upper_bound;
+      read_options.iterate_upper_bound = upper_bound;
       std::unique_ptr<Iterator> iter(db_->NewIterator(read_options));
       ASSERT_EQ(CountIter(iter, "abcd0000"), 4);
     }
@@ -1363,7 +1363,7 @@ TEST_F(DBBloomFilterTest, DynamicBloomFilterUpperBound) {
       Slice upper_bound("abcdzzzz");
       ReadOptions read_options;
       read_options.prefix_same_as_start = true;
-      read_options.iterate_upper_bound = &upper_bound;
+      read_options.iterate_upper_bound = upper_bound;
       std::unique_ptr<Iterator> iter(db_->NewIterator(read_options));
       ASSERT_EQ(CountIter(iter, "abcd0000"), 4);
       ASSERT_EQ(TestGetTickerCount(options, BLOOM_FILTER_PREFIX_CHECKED), 2);
@@ -1377,7 +1377,7 @@ TEST_F(DBBloomFilterTest, DynamicBloomFilterUpperBound) {
       Slice upper_bound("abce");
       ReadOptions read_options;
       read_options.prefix_same_as_start = true;
-      read_options.iterate_upper_bound = &upper_bound;
+      read_options.iterate_upper_bound = upper_bound;
       std::unique_ptr<Iterator> iter(db_->NewIterator(read_options));
       ASSERT_EQ(CountIter(iter, "abcdxx00"), 4);
       // should check bloom filter since upper bound meets requirement
@@ -1391,7 +1391,7 @@ TEST_F(DBBloomFilterTest, DynamicBloomFilterUpperBound) {
       Slice upper_bound("abcey");
       ReadOptions read_options;
       read_options.prefix_same_as_start = true;
-      read_options.iterate_upper_bound = &upper_bound;
+      read_options.iterate_upper_bound = upper_bound;
       std::unique_ptr<Iterator> iter(db_->NewIterator(read_options));
       ASSERT_EQ(CountIter(iter, "abcdxx01"), 4);
       // should skip bloom filter since upper bound is too long
@@ -1404,7 +1404,7 @@ TEST_F(DBBloomFilterTest, DynamicBloomFilterUpperBound) {
       Slice upper_bound("abcdy");
       ReadOptions read_options;
       read_options.prefix_same_as_start = true;
-      read_options.iterate_upper_bound = &upper_bound;
+      read_options.iterate_upper_bound = upper_bound;
       std::unique_ptr<Iterator> iter(db_->NewIterator(read_options));
       ASSERT_EQ(CountIter(iter, "abcdxx02"), 4);
       // should check bloom filter since upper bound matches transformed seek
@@ -1419,7 +1419,7 @@ TEST_F(DBBloomFilterTest, DynamicBloomFilterUpperBound) {
       Slice upper_bound("abce");
       ReadOptions read_options;
       read_options.prefix_same_as_start = true;
-      read_options.iterate_upper_bound = &upper_bound;
+      read_options.iterate_upper_bound = upper_bound;
       std::unique_ptr<Iterator> iter(db_->NewIterator(read_options));
       ASSERT_EQ(CountIter(iter, "aaaaaaaa"), 0);
       // should skip bloom filter since mismatch is found
@@ -1434,7 +1434,7 @@ TEST_F(DBBloomFilterTest, DynamicBloomFilterUpperBound) {
       Slice upper_bound("abd");
       ReadOptions read_options;
       read_options.prefix_same_as_start = true;
-      read_options.iterate_upper_bound = &upper_bound;
+      read_options.iterate_upper_bound = upper_bound;
       std::unique_ptr<Iterator> iter(db_->NewIterator(read_options));
       ASSERT_EQ(CountIter(iter, "abc"), 4);
       ASSERT_EQ(TestGetTickerCount(options, BLOOM_FILTER_PREFIX_CHECKED),
@@ -1447,7 +1447,7 @@ TEST_F(DBBloomFilterTest, DynamicBloomFilterUpperBound) {
       Slice upper_bound("abd");
       ReadOptions read_options;
       read_options.prefix_same_as_start = true;
-      read_options.iterate_upper_bound = &upper_bound;
+      read_options.iterate_upper_bound = upper_bound;
       std::unique_ptr<Iterator> iter(db_->NewIterator(read_options));
       ASSERT_EQ(CountIter(iter, "abc"), 0);
       ASSERT_EQ(TestGetTickerCount(options, BLOOM_FILTER_PREFIX_CHECKED),
@@ -1493,7 +1493,7 @@ TEST_F(DBBloomFilterTest, DynamicBloomFilterMultipleSST) {
     ASSERT_OK(dbfull()->SetOptions({{"prefix_extractor", "capped:3"}}));
     ASSERT_EQ(0, strcmp(dbfull()->GetOptions().prefix_extractor->Name(),
                         "rocksdb.CappedPrefix.3"));
-    read_options.iterate_upper_bound = &upper_bound;
+    read_options.iterate_upper_bound = upper_bound;
     std::unique_ptr<Iterator> iter(db_->NewIterator(read_options));
     ASSERT_EQ(CountIter(iter, "foo"), 2);
     ASSERT_EQ(TestGetTickerCount(options, BLOOM_FILTER_PREFIX_CHECKED),

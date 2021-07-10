@@ -585,8 +585,8 @@ DBOptions* DBOptions::IncreaseParallelism(int total_threads) {
 
 ReadOptions::ReadOptions()
     : snapshot(nullptr),
-      iterate_lower_bound(nullptr),
-      iterate_upper_bound(nullptr),
+      iterate_lower_bound(),
+      iterate_upper_bound(),
       readahead_size(0),
       max_skippable_internal_keys(0),
       read_tier(kReadAllTier),
@@ -604,8 +604,8 @@ ReadOptions::ReadOptions()
 
 ReadOptions::ReadOptions(bool cksum, bool cache)
     : snapshot(nullptr),
-      iterate_lower_bound(nullptr),
-      iterate_upper_bound(nullptr),
+      iterate_lower_bound(),
+      iterate_upper_bound(),
       readahead_size(0),
       max_skippable_internal_keys(0),
       read_tier(kReadAllTier),

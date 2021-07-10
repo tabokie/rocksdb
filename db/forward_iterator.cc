@@ -326,10 +326,10 @@ void ForwardIterator::SeekToFirst() {
 }
 
 bool ForwardIterator::IsOverUpperBound(const Slice& internal_key) const {
-  return !(read_options_.iterate_upper_bound == nullptr ||
-           cfd_->internal_comparator().user_comparator()->Compare(
-               ExtractUserKey(internal_key),
-               *read_options_.iterate_upper_bound) < 0);
+  return !(
+      read_options_.iterate_upper_bound.empty() ||
+      cfd_->internal_comparator().user_comparator()->Compare(
+          ExtractUserKey(internal_key), read_options_.iterate_upper_bound) < 0);
 }
 
 void ForwardIterator::Seek(const Slice& internal_key) {
@@ -402,7 +402,7 @@ void ForwardIterator::SeekInternal(const Slice& internal_key,
         // won't go over this file.
         if (user_comparator_->Compare(target_user_key,
                                       l0[i]->largest.user_key()) > 0) {
-          if (read_options_.iterate_upper_bound != nullptr) {
+          if (!read_options_.iterate_upper_bound.empty()) {
             has_iter_trimmed_for_upper_bound_ = true;
             DeleteIterator(l0_iters_[i]);
             l0_iters_[i] = nullptr;
@@ -634,9 +634,9 @@ void ForwardIterator::RebuildIterators(bool refresh_sv) {
   const auto& l0_files = vstorage->LevelFiles(0);
   l0_iters_.reserve(l0_files.size());
   for (const auto* l0 : l0_files) {
-    if ((read_options_.iterate_upper_bound != nullptr) &&
+    if ((!read_options_.iterate_upper_bound.empty()) &&
         cfd_->internal_comparator().user_comparator()->Compare(
-            l0->smallest.user_key(), *read_options_.iterate_upper_bound) > 0) {
+            l0->smallest.user_key(), read_options_.iterate_upper_bound) > 0) {
       // No need to set has_iter_trimmed_for_upper_bound_: this ForwardIterator
       // will never be interested in files with smallest key above
       // iterate_upper_bound, since iterate_upper_bound can't be changed.
@@ -760,8 +760,8 @@ void ForwardIterator::BuildLevelIterators(const VersionStorageInfo* vstorage) {
   for (int32_t level = 1; level < vstorage->num_levels(); ++level) {
     const auto& level_files = vstorage->LevelFiles(level);
     if ((level_files.empty()) ||
-        ((read_options_.iterate_upper_bound != nullptr) &&
-         (user_comparator_->Compare(*read_options_.iterate_upper_bound,
+        ((!read_options_.iterate_upper_bound.empty()) &&
+         (user_comparator_->Compare(read_options_.iterate_upper_bound,
                                     level_files[0]->smallest.user_key()) <
           0))) {
       level_iters_.push_back(nullptr);

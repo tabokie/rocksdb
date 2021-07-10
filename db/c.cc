@@ -3128,11 +3128,11 @@ void rocksdb_readoptions_set_iterate_upper_bound(
     const char* key, size_t keylen) {
   if (key == nullptr) {
     opt->upper_bound = Slice();
-    opt->rep.iterate_upper_bound = nullptr;
+    opt->rep.iterate_upper_bound = Slice();
 
   } else {
     opt->upper_bound = Slice(key, keylen);
-    opt->rep.iterate_upper_bound = &opt->upper_bound;
+    opt->rep.iterate_upper_bound = Slice(key, keylen);
   }
 }
 
@@ -3141,10 +3141,10 @@ void rocksdb_readoptions_set_iterate_lower_bound(
     const char* key, size_t keylen) {
   if (key == nullptr) {
     opt->lower_bound = Slice();
-    opt->rep.iterate_lower_bound = nullptr;
+    opt->rep.iterate_lower_bound = Slice();
   } else {
     opt->lower_bound = Slice(key, keylen);
-    opt->rep.iterate_lower_bound = &opt->lower_bound;
+    opt->rep.iterate_lower_bound = Slice(key, keylen);
   }
 }
 

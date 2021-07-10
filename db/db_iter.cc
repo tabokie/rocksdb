@@ -323,8 +323,8 @@ class DBIter final: public Iterator {
   uint64_t max_skip_;
   uint64_t max_skippable_internal_keys_;
   uint64_t num_internal_keys_skipped_;
-  const Slice* iterate_lower_bound_;
-  const Slice* iterate_upper_bound_;
+  Slice iterate_lower_bound_;
+  Slice iterate_upper_bound_;
 
   IterKey prefix_start_buf_;
 
@@ -471,10 +471,10 @@ inline bool DBIter::FindNextUserEntryInternal(bool skipping, bool prefix_check) 
 
     is_key_seqnum_zero_ = (ikey_.sequence == 0);
 
-    assert(iterate_upper_bound_ == nullptr || iter_.MayBeOutOfUpperBound() ||
-           user_comparator_.Compare(ikey_.user_key, *iterate_upper_bound_) < 0);
-    if (iterate_upper_bound_ != nullptr && iter_.MayBeOutOfUpperBound() &&
-        user_comparator_.Compare(ikey_.user_key, *iterate_upper_bound_) >= 0) {
+    assert(iterate_upper_bound_.empty() || iter_.MayBeOutOfUpperBound() ||
+           user_comparator_.Compare(ikey_.user_key, iterate_upper_bound_) < 0);
+    if (!iterate_upper_bound_.empty() && iter_.MayBeOutOfUpperBound() &&
+        user_comparator_.Compare(ikey_.user_key, iterate_upper_bound_) >= 0) {
       break;
     }
 
@@ -898,12 +898,12 @@ void DBIter::PrevInternal() {
       return;
     }
 
-    assert(iterate_lower_bound_ == nullptr || iter_.MayBeOutOfLowerBound() ||
+    assert(iterate_lower_bound_.empty() || iter_.MayBeOutOfLowerBound() ||
            user_comparator_.Compare(saved_key_.GetUserKey(),
-                                    *iterate_lower_bound_) >= 0);
-    if (iterate_lower_bound_ != nullptr && iter_.MayBeOutOfLowerBound() &&
+                                    iterate_lower_bound_) >= 0);
+    if (!iterate_lower_bound_.empty() && iter_.MayBeOutOfLowerBound() &&
         user_comparator_.Compare(saved_key_.GetUserKey(),
-                                 *iterate_lower_bound_) < 0) {
+                                 iterate_lower_bound_) < 0) {
       // We've iterated earlier than the user-specified lower bound.
       valid_ = false;
       return;
@@ -1377,11 +1377,11 @@ void DBIter::Seek(const Slice& target) {
   }
 #endif  // ROCKSDB_LITE
 
-  if (iterate_lower_bound_ != nullptr &&
-      user_comparator_.Compare(saved_key_.GetUserKey(), *iterate_lower_bound_) <
+  if (!iterate_lower_bound_.empty() &&
+      user_comparator_.Compare(saved_key_.GetUserKey(), iterate_lower_bound_) <
           0) {
     saved_key_.Clear();
-    saved_key_.SetInternalKey(*iterate_lower_bound_, seq);
+    saved_key_.SetInternalKey(iterate_lower_bound_, seq);
   }
 
   {
@@ -1430,11 +1430,11 @@ void DBIter::SeekForPrev(const Slice& target) {
   saved_key_.SetInternalKey(target, 0 /* sequence_number */,
                             kValueTypeForSeekForPrev);
 
-  if (iterate_upper_bound_ != nullptr &&
-      user_comparator_.Compare(saved_key_.GetUserKey(),
-                               *iterate_upper_bound_) >= 0) {
+  if (!iterate_upper_bound_.empty() &&
+      user_comparator_.Compare(saved_key_.GetUserKey(), iterate_upper_bound_) >=
+          0) {
     saved_key_.Clear();
-    saved_key_.SetInternalKey(*iterate_upper_bound_, kMaxSequenceNumber);
+    saved_key_.SetInternalKey(iterate_upper_bound_, kMaxSequenceNumber);
   }
 
   {
@@ -1477,8 +1477,8 @@ void DBIter::SeekForPrev(const Slice& target) {
 }
 
 void DBIter::SeekToFirst() {
-  if (iterate_lower_bound_ != nullptr) {
-    Seek(*iterate_lower_bound_);
+  if (!iterate_lower_bound_.empty()) {
+    Seek(iterate_lower_bound_);
     return;
   }
   PERF_CPU_TIMER_GUARD(iter_seek_cpu_nanos, env_);
@@ -1524,10 +1524,10 @@ void DBIter::SeekToFirst() {
 }
 
 void DBIter::SeekToLast() {
-  if (iterate_upper_bound_ != nullptr) {
+  if (!iterate_upper_bound_.empty()) {
     // Seek to last key strictly less than ReadOptions.iterate_upper_bound.
-    SeekForPrev(*iterate_upper_bound_);
-    if (Valid() && user_comparator_.Equal(*iterate_upper_bound_, key())) {
+    SeekForPrev(iterate_upper_bound_);
+    if (Valid() && user_comparator_.Equal(iterate_upper_bound_, key())) {
       ReleaseTempPinnedData();
       PrevInternal();
     }

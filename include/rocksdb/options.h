@@ -1193,7 +1193,7 @@ struct ReadOptions {
   // outside of prefix domain.
   //
   // Default: nullptr
-  const Slice* iterate_lower_bound;
+  Slice iterate_lower_bound;
 
   // "iterate_upper_bound" defines the extent upto which the forward iterator
   // can returns entries. Once the bound is reached, Valid() will be false.
@@ -1203,7 +1203,7 @@ struct ReadOptions {
   // This is because ordering is not guaranteed outside of prefix domain.
   //
   // Default: nullptr
-  const Slice* iterate_upper_bound;
+  Slice iterate_upper_bound;
 
   // RocksDB does auto-readahead for iterators on noticing more than two reads
   // for a table file. The readahead starts at 8KB and doubles on every

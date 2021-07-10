@@ -199,7 +199,7 @@ TEST_P(DBIteratorTest, IterReseekNewUpperBound) {
   dbfull()->Flush(FlushOptions());
   ReadOptions opts;
   Slice ub = Slice("aa");
-  opts.iterate_upper_bound = &ub;
+  opts.iterate_upper_bound = ub;
   auto iter = NewIterator(opts);
   iter->Seek(Slice("a"));
   ub = Slice("b");
@@ -820,7 +820,7 @@ TEST_P(DBIteratorTest, DBIteratorBoundTest) {
   // testing basic case with no iterate_upper_bound and no prefix_extractor
   {
     ReadOptions ro;
-    ro.iterate_upper_bound = nullptr;
+    ro.iterate_upper_bound = Slice();
 
     std::unique_ptr<Iterator> iter(NewIterator(ro));
 
@@ -857,7 +857,7 @@ TEST_P(DBIteratorTest, DBIteratorBoundTest) {
     ReadOptions ro;
     // iterate_upper_bound points beyond the last expected entry
     Slice prefix("foo2");
-    ro.iterate_upper_bound = &prefix;
+    ro.iterate_upper_bound = prefix;
 
     std::unique_ptr<Iterator> iter(NewIterator(ro));
 
@@ -879,7 +879,7 @@ TEST_P(DBIteratorTest, DBIteratorBoundTest) {
     ReadOptions ro;
 
     Slice prefix("foo");
-    ro.iterate_upper_bound = &prefix;
+    ro.iterate_upper_bound = prefix;
 
     std::unique_ptr<Iterator> iter(NewIterator(ro));
 
@@ -901,7 +901,7 @@ TEST_P(DBIteratorTest, DBIteratorBoundTest) {
   {
     ReadOptions ro;
     Slice upper_bound("g");
-    ro.iterate_upper_bound = &upper_bound;
+    ro.iterate_upper_bound = upper_bound;
 
     std::unique_ptr<Iterator> iter(NewIterator(ro));
 
@@ -934,7 +934,7 @@ TEST_P(DBIteratorTest, DBIteratorBoundTest) {
 
     // base case with no bound
     ReadOptions ro;
-    ro.iterate_upper_bound = nullptr;
+    ro.iterate_upper_bound = Slice();
 
     std::unique_ptr<Iterator> iter(NewIterator(ro));
 
@@ -954,7 +954,7 @@ TEST_P(DBIteratorTest, DBIteratorBoundTest) {
 
     // now testing with iterate_bound
     Slice prefix("c");
-    ro.iterate_upper_bound = &prefix;
+    ro.iterate_upper_bound = prefix;
 
     iter.reset(NewIterator(ro));
 
@@ -996,7 +996,7 @@ TEST_P(DBIteratorTest, DBIteratorBoundMultiSeek) {
     std::string up_str = "foo5";
     Slice up(up_str);
     ReadOptions ro;
-    ro.iterate_upper_bound = &up;
+    ro.iterate_upper_bound = up;
     std::unique_ptr<Iterator> iter(NewIterator(ro));
 
     iter->Seek("foo1");
@@ -1057,7 +1057,7 @@ TEST_P(DBIteratorTest, DBIteratorBoundOptimizationTest) {
 
     Slice ub("foo3");
     ReadOptions ro;
-    ro.iterate_upper_bound = &ub;
+    ro.iterate_upper_bound = ub;
 
     std::unique_ptr<Iterator> iter(NewIterator(ro));
 
@@ -1154,7 +1154,7 @@ TEST_P(DBIteratorTest, IndexWithFirstKey) {
     // blocks that are fully above upper bound.
     std::string ub = "b3";
     Slice ub_slice(ub);
-    ropt.iterate_upper_bound = &ub_slice;
+    ropt.iterate_upper_bound = ub_slice;
     iter.reset(NewIterator(ropt));
 
     iter->Seek("b2");
@@ -2309,7 +2309,7 @@ TEST_P(DBIteratorTest, UpperBoundWithChangeDirection) {
   std::string upper_bound = "x";
   Slice ub_slice(upper_bound);
   ReadOptions ro;
-  ro.iterate_upper_bound = &ub_slice;
+  ro.iterate_upper_bound = ub_slice;
   ro.max_skippable_internal_keys = 1000;
 
   Iterator* iter = NewIterator(ro);
@@ -2417,7 +2417,7 @@ TEST_P(DBIteratorTest, UpperBoundWithPrevReseek) {
   Slice ub_slice(upper_bound);
   ReadOptions ro;
   ro.snapshot = snapshot;
-  ro.iterate_upper_bound = &ub_slice;
+  ro.iterate_upper_bound = ub_slice;
 
   Iterator* iter = NewIterator(ro);
   iter->SeekForPrev("goo");
@@ -2487,7 +2487,7 @@ TEST_P(DBIteratorTest, SkipStatistics) {
 
   ReadOptions ro;
   Slice prefix("b");
-  ro.iterate_upper_bound = &prefix;
+  ro.iterate_upper_bound = prefix;
 
   iter = NewIterator(ro);
   count = 0;
@@ -2602,7 +2602,7 @@ TEST_P(DBIteratorTest, SeekBackwardAfterOutOfUpperBound) {
 
   ReadOptions ropt;
   Slice ub = "b";
-  ropt.iterate_upper_bound = &ub;
+  ropt.iterate_upper_bound = ub;
 
   std::unique_ptr<Iterator> it(dbfull()->NewIterator(ropt));
   it->SeekForPrev("a");
@@ -2741,7 +2741,7 @@ TEST_P(DBIteratorTest, IterateBoundChangedBeforeSeek) {
   std::string ub2 = "c";
   Slice ub(ub1);
   ReadOptions read_opts1;
-  read_opts1.iterate_upper_bound = &ub;
+  read_opts1.iterate_upper_bound = ub;
   Iterator* iter = NewIterator(read_opts1);
   // Seek and iterate accross block boundary.
   iter->Seek("b");
@@ -2762,7 +2762,7 @@ TEST_P(DBIteratorTest, IterateBoundChangedBeforeSeek) {
   std::string lb2 = "c";
   Slice lb(lb1);
   ReadOptions read_opts2;
-  read_opts2.iterate_lower_bound = &lb;
+  read_opts2.iterate_lower_bound = lb;
   iter = NewIterator(read_opts2);
   iter->SeekForPrev("d");
   ASSERT_TRUE(iter->Valid());
@@ -2790,7 +2790,7 @@ TEST_P(DBIteratorTest, IterateWithLowerBoundAcrossFileBoundary) {
   ASSERT_OK(dbfull()->CompactRange(CompactRangeOptions(), nullptr, nullptr));
   Slice lower_bound("b");
   ReadOptions read_opts;
-  read_opts.iterate_lower_bound = &lower_bound;
+  read_opts.iterate_lower_bound = lower_bound;
   std::unique_ptr<Iterator> iter(NewIterator(read_opts));
   iter->SeekForPrev("d");
   ASSERT_TRUE(iter->Valid());

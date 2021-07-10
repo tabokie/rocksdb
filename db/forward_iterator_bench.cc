@@ -123,7 +123,7 @@ struct Reader {
         state.upper_bound = Key(shard, std::numeric_limits<uint64_t>::max());
         state.upper_bound_slice = rocksdb::Slice(
             (const char*)&state.upper_bound, sizeof(state.upper_bound));
-        options.iterate_upper_bound = &state.upper_bound_slice;
+        options.iterate_upper_bound = state.upper_bound_slice;
       }
 
       state.it.reset(db_->NewIterator(options));

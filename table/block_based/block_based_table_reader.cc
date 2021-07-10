@@ -2612,7 +2612,7 @@ bool BlockBasedTable::PrefixMayMatch(
     if (!filter->IsBlockBased()) {
       const Slice* const const_ikey_ptr = &internal_key;
       may_match = filter->RangeMayExist(
-          read_options.iterate_upper_bound, user_key, prefix_extractor,
+          &read_options.iterate_upper_bound, user_key, prefix_extractor,
           rep_->internal_comparator.user_comparator(), const_ikey_ptr,
           &filter_checked, need_upper_bound_check, lookup_context);
     } else {
@@ -3039,10 +3039,10 @@ void BlockBasedTableIterator<TBlockIter, TValue>::FindBlockForward() {
     }
     // Whether next data block is out of upper bound, if there is one.
     const bool next_block_is_out_of_bound =
-        read_options_.iterate_upper_bound != nullptr &&
+        !read_options_.iterate_upper_bound.empty() &&
         block_iter_points_to_real_block_ && !data_block_within_upper_bound_;
     assert(!next_block_is_out_of_bound ||
-           user_comparator_.Compare(*read_options_.iterate_upper_bound,
+           user_comparator_.Compare(read_options_.iterate_upper_bound,
                                     index_iter_->user_key()) <= 0);
     ResetDataIter();
     index_iter_->Next();
@@ -3105,18 +3105,18 @@ void BlockBasedTableIterator<TBlockIter, TValue>::FindKeyBackward() {
 
 template <class TBlockIter, typename TValue>
 void BlockBasedTableIterator<TBlockIter, TValue>::CheckOutOfBound() {
-  if (read_options_.iterate_upper_bound != nullptr && Valid()) {
+  if (!read_options_.iterate_upper_bound.empty() && Valid()) {
     is_out_of_bound_ = user_comparator_.Compare(
-                           *read_options_.iterate_upper_bound, user_key()) <= 0;
+                           read_options_.iterate_upper_bound, user_key()) <= 0;
   }
 }
 
 template <class TBlockIter, typename TValue>
 void BlockBasedTableIterator<TBlockIter, TValue>::CheckDataBlockWithinUpperBound() {
-  if (read_options_.iterate_upper_bound != nullptr &&
+  if (!read_options_.iterate_upper_bound.empty() &&
       block_iter_points_to_real_block_) {
     data_block_within_upper_bound_ =
-        (user_comparator_.Compare(*read_options_.iterate_upper_bound,
+        (user_comparator_.Compare(read_options_.iterate_upper_bound,
                                   index_iter_->user_key()) > 0);
   }
 }

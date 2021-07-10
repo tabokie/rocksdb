@@ -135,7 +135,7 @@ TEST_F(DBTestTailingIterator, TailingIteratorTrimSeekToNext) {
   char bufe[32];
   snprintf(bufe, sizeof(bufe), "00b0%016d", 0);
   Slice keyu(bufe, 20);
-  read_options.iterate_upper_bound = &keyu;
+  read_options.iterate_upper_bound = keyu;
   std::unique_ptr<Iterator> iter(db_->NewIterator(read_options, handles_[1]));
   std::unique_ptr<Iterator> itern(db_->NewIterator(read_options, handles_[1]));
   std::unique_ptr<Iterator> iterh(db_->NewIterator(read_options, handles_[1]));
@@ -392,7 +392,7 @@ TEST_F(DBTestTailingIterator, TailingIteratorUpperBound) {
   const Slice upper_bound("20", 3);
   ReadOptions read_options;
   read_options.tailing = true;
-  read_options.iterate_upper_bound = &upper_bound;
+  read_options.iterate_upper_bound = upper_bound;
 
   ASSERT_OK(Put(1, "11", "11"));
   ASSERT_OK(Put(1, "12", "12"));
@@ -483,8 +483,7 @@ TEST_F(DBTestTailingIterator, SeekWithUpperBoundBug) {
   ReadOptions read_options;
   read_options.tailing = true;
   const Slice upper_bound("cc", 3);
-  read_options.iterate_upper_bound = &upper_bound;
-
+  read_options.iterate_upper_bound = upper_bound;
 
   // 1st L0 file
   ASSERT_OK(db_->Put(WriteOptions(), "aa", "SEEN"));
@@ -505,8 +504,7 @@ TEST_F(DBTestTailingIterator, SeekToFirstWithUpperBoundBug) {
   ReadOptions read_options;
   read_options.tailing = true;
   const Slice upper_bound("cc", 3);
-  read_options.iterate_upper_bound = &upper_bound;
-
+  read_options.iterate_upper_bound = upper_bound;
 
   // 1st L0 file
   ASSERT_OK(db_->Put(WriteOptions(), "aa", "SEEN"));

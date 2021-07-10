@@ -4285,7 +4285,7 @@ TEST_P(BlockBasedTableTest, OutOfBoundOnSeek) {
   ReadOptions read_opt;
   std::string upper_bound = "bar";
   Slice upper_bound_slice(upper_bound);
-  read_opt.iterate_upper_bound = &upper_bound_slice;
+  read_opt.iterate_upper_bound = upper_bound_slice;
   std::unique_ptr<InternalIterator> iter;
   iter.reset(new KeyConvertingIterator(reader->NewIterator(
       read_opt, /*prefix_extractor=*/nullptr, /*arena=*/nullptr,
@@ -4323,7 +4323,7 @@ TEST_P(BlockBasedTableTest, OutOfBoundOnNext) {
   ReadOptions read_opt;
   std::string ub1 = "bar_after";
   Slice ub_slice1(ub1);
-  read_opt.iterate_upper_bound = &ub_slice1;
+  read_opt.iterate_upper_bound = ub_slice1;
   std::unique_ptr<InternalIterator> iter;
   iter.reset(new KeyConvertingIterator(reader->NewIterator(
       read_opt, /*prefix_extractor=*/nullptr, /*arena=*/nullptr,
@@ -4336,7 +4336,7 @@ TEST_P(BlockBasedTableTest, OutOfBoundOnNext) {
   ASSERT_TRUE(iter->IsOutOfBound());
   std::string ub2 = "foo_after";
   Slice ub_slice2(ub2);
-  read_opt.iterate_upper_bound = &ub_slice2;
+  read_opt.iterate_upper_bound = ub_slice2;
   iter.reset(new KeyConvertingIterator(reader->NewIterator(
       read_opt, /*prefix_extractor=*/nullptr, /*arena=*/nullptr,
       /*skip_filters=*/false, TableReaderCaller::kUncategorized)));

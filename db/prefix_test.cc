@@ -834,7 +834,7 @@ TEST_F(PrefixTest, PrefixSeekModePrev3) {
     auto db = OpenDb();
     WriteOptions write_options;
     ReadOptions read_options;
-    read_options.iterate_upper_bound = &upper_bound;
+    read_options.iterate_upper_bound = upper_bound;
     PutKey(db.get(), write_options, TestKey(1, 2), "v12");
     PutKey(db.get(), write_options, TestKey(1, 4), "v14");
     db->Flush(FlushOptions());
@@ -854,7 +854,7 @@ TEST_F(PrefixTest, PrefixSeekModePrev3) {
     auto db = OpenDb();
     WriteOptions write_options;
     ReadOptions read_options;
-    read_options.iterate_upper_bound = &upper_bound;
+    read_options.iterate_upper_bound = upper_bound;
     PutKey(db.get(), write_options, TestKey(1, 2), "v12");
     PutKey(db.get(), write_options, TestKey(1, 4), "v14");
     PutKey(db.get(), write_options, TestKey(3, 3), "v33");

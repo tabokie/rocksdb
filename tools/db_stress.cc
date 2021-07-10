@@ -2414,7 +2414,7 @@ class StressTest {
       upper_bound = Slice(upper_bound_str);
       // uppder_bound can be smaller than seek key, but the query itself
       // should not crash either.
-      readoptionscopy.iterate_upper_bound = &upper_bound;
+      readoptionscopy.iterate_upper_bound = upper_bound;
     }
     std::string lower_bound_str;
     Slice lower_bound;
@@ -2425,7 +2425,7 @@ class StressTest {
       lower_bound = Slice(lower_bound_str);
       // uppder_bound can be smaller than seek key, but the query itself
       // should not crash either.
-      readoptionscopy.iterate_lower_bound = &lower_bound;
+      readoptionscopy.iterate_lower_bound = lower_bound;
     }
 
     auto cfh = column_families_[rand_column_families[0]];
@@ -3283,7 +3283,7 @@ class NonBatchedOpsStressTest : public StressTest {
     if (thread->rand.OneIn(2) && GetNextPrefix(prefix, &upper_bound)) {
       // For half of the time, set the upper bound to the next prefix
       ub_slice = Slice(upper_bound);
-      ro_copy.iterate_upper_bound = &ub_slice;
+      ro_copy.iterate_upper_bound = ub_slice;
     }
 
     Iterator* iter = db_->NewIterator(ro_copy, cfh);
@@ -3889,7 +3889,7 @@ class BatchedOpsStressTest : public StressTest {
           GetNextPrefix(prefix_slices[i], &(upper_bounds[i]))) {
         // For half of the time, set the upper bound to the next prefix
         ub_slices[i] = Slice(upper_bounds[i]);
-        readoptionscopy[i].iterate_upper_bound = &(ub_slices[i]);
+        readoptionscopy[i].iterate_upper_bound = (ub_slices[i]);
       }
       iters[i] = db_->NewIterator(readoptionscopy[i], cfh);
       iters[i]->Seek(prefix_slices[i]);
@@ -4119,7 +4119,7 @@ class AtomicFlushStressTest : public StressTest {
     ReadOptions ro_copy = readoptions;
     if (thread->rand.OneIn(2) && GetNextPrefix(prefix, &upper_bound)) {
       ub_slice = Slice(upper_bound);
-      ro_copy.iterate_upper_bound = &ub_slice;
+      ro_copy.iterate_upper_bound = ub_slice;
     }
     auto cfh =
         column_families_[rand_column_families[thread->rand.Next() %

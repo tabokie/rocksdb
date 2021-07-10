@@ -5239,13 +5239,13 @@ class Benchmark {
               static_cast<uint64_t>(std::max(
                   static_cast<int64_t>(0), seek_pos - FLAGS_max_scan_distance)),
               FLAGS_num, &lower_bound);
-          options.iterate_lower_bound = &lower_bound;
+          options.iterate_lower_bound = lower_bound;
         } else {
           auto min_num =
               std::min(FLAGS_num, seek_pos + FLAGS_max_scan_distance);
           GenerateKeyFromInt(static_cast<uint64_t>(min_num), FLAGS_num,
                              &upper_bound);
-          options.iterate_upper_bound = &upper_bound;
+          options.iterate_upper_bound = upper_bound;
         }
       }
 
